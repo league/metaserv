@@ -1,0 +1,7 @@
+<?^open Unix ?>  <?let st = stat "server.log" in 
+    let sz = float_of_int st.st_size in
+    let (amt, unit) = match arg "unit" with
+          | Some "M" -> (sz /. 1048576., "M")
+          | Some "k" -> (sz /. 1024., "k")
+          | _          -> (sz, "") ?>
+<?"%.1f%s" amt, unit ?>

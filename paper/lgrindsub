@@ -22,4 +22,10 @@ s:\\<:\\textlt{}:g
 s:\\>:\\textgt{}:g
 
 # Increase spacing
-s:\\Head{}:\\Head{}\\baselineskip=11pt:
+#s:\\Head{}:\\Head{}\\baselineskip=11pt:
+
+# TeX comments
+s:^\\L{\\LB{\\Mquote{}\\CE{}\\C{}(\*_\(.*\)}}$:\\lgcommentstart{\\catcode`\\_=\\active\\def_{ } \1:
+s:^\\L{\\LB{}\\Tab{[0-9]*}{\*_\(.*\)}}$: \1:
+s:^\\L{\\LB{}\\Tab{[0-9]*}{\*)\\CE{}\\C{}\\Munquote}}:}\\lgcommentend:
+#s:\([^_]*\)_:%_%\1 :g

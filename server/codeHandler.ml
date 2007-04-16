@@ -22,6 +22,18 @@ type map = ((unit -> page) * page ref) StringMap.t
     if Request.version req < 1.1 then buffered_response
     else chunked_response
 
+  let headers o req st =
+    Printf.fprintf o
+      "HTTP/1.1 %d %s\r\n\
+       Server: MetaOCaml/%s\r\n\
+       Connection: %s\r\n\
+       Date: %s\r\n\
+       Content-type: text/html\r\n"
+           (Status.code st) (Status.text st)
+           Sys.ocaml_version
+           (Request.keep_alive req)
+           (TimeStamp.now())
+
   let mutex = Mutex.create()
 
 (* NEED A WAY FOR script function to send additional headers *)
@@ -39,15 +51,22 @@ type map = ((unit -> page) * page ref) StringMap.t
           with e ->
             Printf.kprintf puts
               "<b>Unhandled exception: %s</b>" (Printexc.to_string e) in
-        Printf.fprintf o
-          "HTTP/1.1 200 OK\r\n\
-          Server: MetaOCaml/%s\r\n\
-          Connection: %s\r\n\
-          Date: %s\r\n\
-          Content-type: text/html\r\n"
-                Sys.ocaml_version
-                (Request.keep_alive req)
-                (TimeStamp.now());
+        headers o req Status.Ok;
+        choose_response req fn o;
+        Status.Ok
+    | _ -> raise Server.Not_implemented)
+
+(* This one is for already-compiled code (not using META features) *)
+  let runc map req o =
+   (match Request.meth req with
+      Request.GET ->
+        let handler = StringMap.find (Request.uri req) map in
+        let fn puts = 
+          try handler req puts
+          with e ->
+            Printf.kprintf puts
+              "<b>Unhandled exception: %s</b>" (Printexc.to_string e) in
+        headers o req Status.Ok;
         choose_response req fn o;
         Status.Ok
     | _ -> raise Server.Not_implemented)
@@ -71,17 +90,8 @@ type map = ((unit -> page) * page ref) StringMap.t
         let url = url^uri' in
         let page puts =
           Printf.kprintf puts "Go <a href=\"%s\">here</a>.\n" url in
-        Printf.fprintf o
-          "HTTP/1.1 301 Moved Permanently\r\n\
-          Server: MetaOCaml/%s\r\n\
-          Connection: %s\r\n\
-          Date: %s\r\n\
-          Location: %s\r\n\
-          Content-type: text/html\r\n"
-                Sys.ocaml_version
-                (Request.keep_alive req)
-                (TimeStamp.now())
-                url;
+        headers o req Status.Moved_permanently;
+        Printf.fprintf o "Location: %s\r\n" url;
         choose_response req page o;
         Status.Moved_permanently
      | _ -> raise Server.Not_implemented)
@@ -108,18 +118,8 @@ type map = ((unit -> page) * page ref) StringMap.t
         let url = url^uri' in
         let page puts =
           Printf.kprintf puts "Go <a href=\"%s\">here</a>.\n" url in
-        Printf.fprintf o
-          "HTTP/1.1 301 Moved Permanently\r\n\
-          Server: MetaOCaml/%s\r\n\
-          Connection: %s\r\n\
-          Pragma: no-cache\r\n\
-          Date: %s\r\n\
-          Location: %s\r\n\
-          Content-type: text/html\r\n"
-                Sys.ocaml_version
-                (Request.keep_alive req)
-                (TimeStamp.now())
-                url;
+        headers o req Status.Moved_permanently;
+        Printf.fprintf o "Pragma: no-cache\r\nLocation: %s\r\n" url;
         choose_response req page o;
         Status.Moved_permanently
      | _ -> raise Server.Not_implemented)

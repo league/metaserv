@@ -8,11 +8,12 @@
 METADIR = $(HOME)/tmp/metaocaml/bin
 
 # Names of MetaOCaml batch compiler and interactive top-level system.
-OCAMLC = $(METADIR)/ocamlc
 OCAML = $(METADIR)/metaocaml
+OCAMLC = $(METADIR)/ocamlc
+OCAMLOPT = $(METADIR)/ocamlopt
 OCAMLDEP = $(METADIR)/ocamldep
 MLFLAGS = -I +threads -I server
-CFLAGS = -thread -g
+CFLAGS = -thread
 
 # The Meta->ML compiler is written in Standard ML.
 SML = $(HOME)/tmp/nj/bin/sml
@@ -29,6 +30,7 @@ EPSTOPDF = epstopdf
 TEXI2DVI = texi2dvi -b
 TEXI2PDF = texi2pdf -b
 DVIPS = dvips
+PSBIND = psbind
 LGRIND = lgrind -d paper/lgrindef 
 LSED = sed -f paper/lgrindsub
 
@@ -40,12 +42,15 @@ power_cases  = 17 127 255 511 1023 2047 4095 8191
 ###################################################################
 ###  Top-level rules
 
-default: server/server.cma scripts/run
+default: server/server.cma server/nativeserver scripts/run
 
-LIBS = unix str nums threads server
-OCAMLCMD = $(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
+LIBS = unix str nums threads
+OCAMLCMD = $(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS)) server.cma
 
-all: default $(addprefix bench/d., $(dir_sizes))
+all: default $(addprefix bench/d., $(dir_sizes)) server.log
+
+server.log:
+	touch $@
 
 run: all
 	$(OCAMLCMD) scripts/run
@@ -53,13 +58,14 @@ daemon: all
 	$(NOHUP) $(OCAMLCMD) scripts/run &
 
 interact: default
-	$(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
+	$(OCAMLCMD)
 
 staged_php := $(addprefix bench/d-, $(addsuffix .php, $(dir_sizes)))
 bench: $(staged_php)
 
 pdf: paper/paper.pdf
 ps: paper/paper.ps
+2ps: paper/paper.2ps
 dvi: paper/paper.dvi
 
 talk_figs := dot dot2 dot3 dot4 dotst first prn decl trans trans2
@@ -78,8 +84,8 @@ mostlyclean: texclean
 	$(RM) -r metac/$(CM)
 
 clean: mostlyclean
-	$(RM) metac/metac.*-* server/*.cm? $(staged_php)
-	$(RM) scripts/run scripts/trans.ml $(ml_files)
+	$(RM) metac/metac.*-* server/*.cm? server/*.o $(staged_php)
+	$(RM) scripts/run scripts/trans.ml $(ml_files) server/nativeserver
 	$(RM) $(screens_png) $(screens_eps) $(listings_tex)
 	$(RM) $(figs_tex) $(figs_eps) $(figs_pdf) $(talk_figs_pdf)
 	$(RM) $(addprefix paper/paper., dvi wdvi ps 2ps)
@@ -102,6 +108,8 @@ reallyclean: clean
 	$(OCAMLC) $(CFLAGS) $(MLFLAGS) -c $<
 %.cmo: %.ml
 	$(OCAMLC) $(CFLAGS) $(MLFLAGS) -c $<
+%.cmx: %.ml
+	$(OCAMLOPT) $(CFLAGS) $(MLFLAGS) -c $<
 
 # New Jersey heap file
 ifeq ($(shell uname), Darwin)
@@ -135,12 +143,13 @@ bench/d-%.php: bench/d.% bench/dir-staged.php
 	$(EPSTOPDF) $<
 
 # GNUplot
-paper/%.eps paper/%.tex: bench/%.gp
+paper/%.eps paper/%.tex: bench/%.gp bench/*.dat
 	cd bench && $(GNUPLOT) $*.gp
 	mv bench/$*.eps paper
 	mv bench/$*.tex paper
 
 # LaTeX
+.DELETE_ON_ERROR:
 %.pdf: %.tex
 	cd $(dir $<) && $(TEXENV) $(TEXI2PDF) $(notdir $<)
 %.dvi: %.tex
@@ -148,6 +157,8 @@ paper/%.eps paper/%.tex: bench/%.gp
 %.ps: %.dvi
 	cd $(dir $<) && \
 	$(TEXENV) $(DVIPS) -o $(notdir $@) $(notdir $<)
+%.2ps: %.ps
+	$(PSBIND) $< >$@
 %.eps: %.dvi
 	cd $(dir $<) && \
 	$(TEXENV) $(DVIPS) -E -o $(notdir $@) $(notdir $<)
@@ -183,7 +194,8 @@ talk/%.dvi: talk/%.lg talk/skeleton.tex paper/fonts.tex
 include Makefile.depend
 
 server_modules := chunked timeStamp stringMap stringSet status request \
-		  logFile server fileHandler codeHandler navBar
+		  logFile server fileHandler codeHandler navBar navspec \
+		  dirHof dirUn powHof powUnstaged hofMap
 server_modules := $(addprefix server/, $(server_modules))
 server_objects := $(addsuffix .cmo, $(server_modules))
 server_sources := $(addsuffix .ml, $(server_modules))
@@ -192,12 +204,15 @@ server/server.cma: $(server_objects)
 Makefile.depend: $(server_sources)
 	$(OCAMLDEP) $(MLFLAGS) $^ >$@
 
+server/nativeserver: $(addsuffix .cmx, $(server_modules)) server/hofMain.cmx
+	$(OCAMLOPT) $(MLFLAGS) -o $@ $(addsuffix .cmxa, $(LIBS)) $^
+
 # for metac:
 metac_sources := $(addprefix metac/, $(shell tail +2 metac/metac.cm))
 metac/metac.$(HEAP): $(metac_sources)
 
 # for paper:
-figures := $(addprefix paper/, static browse power)
+figures := $(addprefix paper/, static browse hofbrowse power)
 figs_tex := $(addsuffix .tex, $(figures))
 figs_eps := $(addsuffix .eps, $(figures))
 figs_pdf := $(addsuffix .pdf, $(figures))
@@ -206,8 +221,10 @@ screens := $(addprefix paper/, confcal power127 server-dir gc)
 screens_png := $(addsuffix .png, $(screens))
 screens_eps := $(addsuffix .eps, $(screens))
 
-listings := trans.ml navspec-sig.ml dir-out.ml codeHandler.mli \
-  $(addsuffix .meta, first pi perm perm2 perm3 count count2 power dir gc trans)
+listings := trans.ml navspec-sig.ml powerhof.ml dir-out.ml \
+  size-out.ml codeHndl.mli \
+  $(addsuffix .meta, first pi size size2 size3 perm perm2 perm3 \
+    count count2 power dir gc trans)
 listings_tex := $(addprefix paper/, $(addsuffix .tex, $(listings)))
 
 TEXENV = 
@@ -220,7 +237,9 @@ paper/paper.dvi: $(tex_files) $(screens_eps) $(figs_eps)
 
 plain_pages := /gc/Gc /Index /about/About /uname/Uname \
   /uptime/Uptime /http/Http /first/First /pi/Pi /perm/Perm \
-  /perm2/Perm2 /perm3/Perm3 /count/Count /checkme/Checkme
+  /perm2/Perm2 /perm3/Perm3 /count/Count /checkme/Checkme \
+  /size/Size /size2/Size2 /size3/Size3
+#/testme/Testme
 dir_pages := metac paper scripts server bench images
 
 script_names := dir dirUn dirNoMd5 dirUnNoMd5 power powerUn count2 \

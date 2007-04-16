@@ -1,0 +1,8 @@
+<?^open Unix open Printf
+    let st = stat "server.log" 
+    let sz = float_of_int st.st_size 
+    let fmt d u = lift(sprintf "%.1f%s" (sz/.d) u) ?>
+<?match arg "unit" with
+      | Some "M" -> puts .~(fmt 1048576. "M")
+      | Some "k" -> puts .~(fmt 1024. "k")
+      | _          -> puts .~(fmt 1. "") ?>

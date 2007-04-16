@@ -1,181 +1,140 @@
 <?pragma args uri d ?>
-<?^(* The script takes two publish-stage arguments:
-      uri is the server path of the generated page, and
-      d is the filesystem path of the directory to browse. *)
-  open Printf 
-  open Unix 
- ?>
-<?!=(* We assemble the page title and navigation bar in 
-       the publish stage.  These are then propagated as
-       a string to be printed in the serve stage. *)
-  preamble("browsing "^d) ^
-  navbar uri 
- ?>
-<?^(* The default regular expression is compiled in 
-      advance, but superseded if the `re' argument
-      is provided in the HTTP request. *)
-  let default_re = 
-      let r = "^[^\\.].*[^~]$" in (r, Str.regexp r)
- ?>
-<?let (re,rc) = match arg "re" with
-          None -> default_re 
-        | Some r -> (r, Str.regexp r) 
- ?>
-<?~let list = list_files d .<rc>. 
-    (* The above call to list_files occurs in the first
-       stage, but it produces code to be executed in the
-       second stage. The first stage stats all the files and
-       computes MD5 sums.  The second stage filters
-       according to the regular expression, passed to
-       list_files as code.  The definition of list_files
-       appears later in this script. *)
- ?>
-<?let ord = match arg "ord" with
-      None -> "name"   (* default sort order *)
-    | Some o -> o in
-  (* Sorting occurs entirely in the second stage.  The
-     function sort_by is also defined later in this
-     script. *)
-  let list = sort_by ord list in
- ?>
+<?(* The script takes two publish-stage arguments: `uri' is the server
+   * path of the generated page, and `d' is the filesystem path of the
+   * directory to browse.
+   *)?>
+<?^open Printf open Unix ?>
+<?(* We assemble the page title and navigation bar in the publish stage.
+   * These are then propagated as a string to be printed in the serve
+   * stage.
+   *)?>
+<?!=preamble("browsing "^d) ^ navbar uri ?>
+<?(* The default regular expression is compiled in advance, but
+   * superseded if the `re' argument is provided in the HTTP request.
+   *)?>
+<?^let default_re = let r = "^[^\\.].*[^~]$" in (r, Str.regexp r) ?>
+<?let (re,rc) = match arg "re" with 
+          None -> default_re | Some r -> (r, Str.regexp r) ?>
+<?~let list = list_files d .<rc>. ?>
+<?(* The above call to list_files occurs in the first stage, but it
+   * produces code to be executed in the second stage. The first stage
+   * stats all the files and computes MD5 sums. The next stage filters
+   * according to the regular expression, passed to list_files as
+   * code. The function list_files appears later in this script.
+   *)?>
+<?let ord = match arg "ord" with 
+          None -> "name" (* default *) | Some o -> o in
+  let list = sort_by ord list in ?>
+<?(* Sorting occurs entirely in the second stage. The function sort_by
+   * is also defined later in this script.
+   *)?>
 <form method='get' action=''>
-  <input type='submit' value='Redisplay' />
- files matching
-  <input type='text' name='re' size='14' value='<?=re?>' />
- ordered by
-  <select name='ord'>
-  <?~(* ord_options (defined later) generates the option 
-        tags for the drop-down menu. *)
-     ord_options .<puts>. .<ord>.
-         ["name", "Name";
-          "ext",  "Extension";
-          "time", "Timestamp";
-          "size", "Size";
-          "kind", "Kind"] 
-  ?>
-  </select>
-</form>
+<input type='submit' value='Redisplay' /> files matching
+<input type='text' name='re' size='14' value='<?=re?>' />
+ordered by <select name='ord'>
+<?~ord_options .<puts>. .<ord>.
+      ["name", "Name"; "ext",  "Extension";
+       "time", "Timestamp"; "size", "Size";
+       "kind", "Kind"] ?> </select></form>
+<?(* ord_options (defined later) generates the option tags for the
+   * drop-down menu.
+   *)?>
 <pre>
-<?=header  (* column headings *) ?>
-<?List.iter (fun f -> puts f.prn) list ?>
+<?=header (* column heads *) ?>
+<?List.iter (fun f->puts f.prn) list ?>
 </pre>
 <form method='post' action='<?=uri?>!'>
-<input type='submit' value='Regenerate' />
-</form>
-<?=postamble  (* page ends here *) ?>
-<?^ (*****************************************)
-(* Recall: declaration blocks (like this one) are lifted
-   up before any of the page code; that is why we can
-   use functions like list_files and sort_by (seemingly) 
-   before defining them. *)
-
-(* The list we intend to build includes not only file
-   names, but all the file data and even the printed
-   representation---all of it prepared in advance. *)
-type fileinfo = {
-    name: string;  ext: string;  kind: string;
-    mtime: float;  size: int;    md5: string;
-    prn: string  (* printed representation *)
-  }
-(* The various sort orders use different fields of
-   the above record type. *)
-let cmp_ext f1 f2 = compare f1.ext f2.ext
-let cmp_kind f1 f2 = compare f1.kind f2.kind
-let cmp_mtime f1 f2 = compare f1.mtime f2.mtime
-let cmp_size f1 f2 = compare f1.size f2.size
-let sort_by order list = match order with
-    | "ext"  -> List.stable_sort cmp_ext list
-    | "kind" -> List.stable_sort cmp_kind list
-    | "time" -> List.stable_sort cmp_mtime list
-    | "size" -> List.stable_sort cmp_size list
-    | _ -> list  (* already sorted by name *)
-
-(* The following format string is used to generate the 
-   prn field of each entry.  The column headings are
-   defined similarly. *)
-let entry_fmt = format_of_string
-   "<span class='md5'>%-32s</span>  %-13s  %5s  \
-    <a class='file' href='%s'><span class='%s'>\
-    %s</span></a>%s\n"
+<input type='submit' value='Regenerate' /></form>
+<?=postamble  (* page ends *) ?>
+<?(* Recall: declaration blocks (like the one below) are lifted up
+   * before any of the page code; that is why we seem to use functions
+   * like list_files before defining them.
+   *)?>
+<?^type fileinfo = { name: string; ext: string; kind: string;
+      mtime: float; size: int; md5: string; prn: string } ?>
+<?(* The list we intend to build includes not only file names, but all
+   * the file data and even the printed representation, all of it
+   * prepared in advance. The various sort orders use different fields
+   * of the above record type.
+   *)?>
+<?^let cex f1 f2 = compare f1.ext f2.ext
+    let ck f1 f2 = compare f1.kind f2.kind
+    let cmt f1 f2 = compare f1.mtime f2.mtime
+    let csz f1 f2 = compare f1.size f2.size
+    let sort_by order list = match order with
+     | "ext"  -> List.stable_sort cex list | "kind" -> List.stable_sort ck list
+     | "time" -> List.stable_sort cmt list | "size" -> List.stable_sort csz list
+     | _ -> list ?>
+<?(* The following format string is used to generate the printable
+   * representation of each entry. The column headings are defined
+   * similarly.
+   *)?>
+<?^let entry_fmt = format_of_string
+"<span class='md5'>%-32s</span>  %-13s  %5s  <a class='file' \
+  href='%s'><span class='%s'>%s</span></a>%s\n"
 let header = sprintf
-   "<b>%-32s  %-13s  %-5s  %s</b>\n"
-   "checksum" "last modified" "size" "name"
-
-(* Generate `human-readable' sizes *)
-let human_size n = 
-  if n < 1024 then sprintf "%4d " n
-  else if n < 102400 
-  then sprintf "%4.1fk" (float_of_int n/.1024.)
-  else if n < 1024000 
-  then sprintf "%4dk" (n/1024)
-  else if n < 104857600 
-  then sprintf "%4.1fM" (float_of_int n/.1048576.)
-  else sprintf "%4dM" (n/1048576)
-
-(* Generate kind and symbol (like `ls --F') from 
-   filename extension and/or file permissions. *)
-let reg_kinds ext perm =
-  let k = match ext with
-      | "a"   -> "lib" | "cma" -> "lib"
-      | "cmi" -> "obj" | "cmo" -> "obj"
-      | "ml"  -> "src" | "sml" -> "src"
-      | "mli" -> "hdr" | "sig" -> "hdr"
-      | _ -> "" in
-  let i = if perm land 0o111 = 0 then "" else "*" in
-  match (k,i) with
-  | ("", "*") -> ("exe", "*")
-  | other -> other
-
-(* Gather all the info for file `f' in directory `d'. *)
-let fileinfo d f =
-  let path = Filename.concat d f in
-  let st = stat path in
-  let md5 = if st.st_kind = S_REG 
-    then Digest.to_hex (Digest.file path) else "" in
-  let ext = 
-    try let i = String.rindex f '.' + 1 in
-        Str.string_after f i
-    with Not_found -> "" in
-  let (kind, indicator) = 
-    match st.st_kind with
-    | S_DIR -> ("dir", "/") | S_FIFO -> ("fifo", "|")
-    | S_BLK -> ("bdev", "") | S_CHR -> ("cdev", "")
-    | S_LNK -> ("link", "@") | S_SOCK -> ("sock", "=")
-    | S_REG -> reg_kinds ext st.st_perm in
-  let prn = sprintf entry_fmt md5
-      (TimeStamp.brief st.st_mtime) 
-      (human_size st.st_size)
-      f kind f indicator
-  in {name=f; ext=ext; kind=kind; md5=md5;
-      mtime=st.st_mtime; size=st.st_size; prn=prn}
-
-(* List filenames, in reverse alphabetical order *)
-let cmp x y = - (compare x y)
-let rec read_all dh files = 
-  try read_all dh (readdir dh :: files)
-  with End_of_file -> closedir dh; List.sort cmp files
-
-(* Walk through all the files and gather their 
-   information, then generate code to filter
-   based on filename. *)
-let list_files d re =
-  let rec loop term files =
-    match files with [] -> term
-    | name::files ->
-      .<let list =
-          try ignore(Str.search_forward .~re name 0);
-              .~(lift(fileinfo d name)) :: .~term
-          with Not_found -> .~term
-        in .~(loop .<list>. files)>. 
-in loop .<[]>. (read_all (opendir d) [])
-
-(* Generate code to print the option tags, adding 
-   the `selected' attribute as appropriate. *)
-let rec ord_options puts ord opts = 
-     match opts with [] -> .<()>.
-     | (tag,text)::opts ->
-     .<(kprintf .~puts 
-          "<option %s value='%s'>%s</option>\n"
-          (if .~ord = tag then "selected" else "") tag text;
-       .~(ord_options puts ord opts))>.
-(* End of `dir.meta' *) ?>
+ "<b>%-32s  %-13s  %-5s  %s</b>\n"
+ "checksum" "last modified" "size" "name" ?>
+<?(* Generate `human-readable' sizes:
+   *)?>
+<?^let human_size n = 
+     if n < 1024 then sprintf "%4d " n
+     else if n < 102400 then sprintf "%4.1fk" (float_of_int n/.1024.)
+     else if n < 1024000 then sprintf "%4dk" (n/1024)
+     else if n < 104857600 then sprintf "%4.1fM" (float_of_int n/.1048576.)
+     else sprintf "%4dM" (n/1048576) ?>
+<?(* Generate kind and symbol (like `--F' option of `ls') from filename
+   * extension and/or file permissions.
+   *)?>
+<?^let reg_kinds ext perm =
+     let k = match ext with
+       | "a"->"lib" | "cma"->"lib" | "cmi"->"obj" | "cmo"->"obj"
+       | "ml"->"src" | "sml"->"src" | "mli"->"hdr" | "sig"->"hdr"
+       | _->"" in
+     let i = if perm land 0o111 = 0 then "" else "*" in
+     match (k,i) with
+       | ("", "*") -> ("exe", "*") | other -> other ?>
+<?(* Gather all the info for file `f' in directory `d'.
+   *)?>
+<?^let fileinfo d f =
+      let path = Filename.concat d f in
+      let st = stat path in
+      let md5 = if st.st_kind = S_REG 
+        then Digest.to_hex(Digest.file path) else "" in
+      let ext = try let i = String.rindex f '.' + 1 in Str.string_after f i
+                with Not_found -> "" in
+      let (kind, indicator) = match st.st_kind with
+        | S_DIR->("dir", "/") | S_FIFO->("fifo", "|")
+        | S_BLK->("bdev", "") | S_CHR->("cdev", "")
+        | S_LNK->("link", "@") | S_SOCK->("sock", "=")
+        | S_REG->reg_kinds ext st.st_perm
+      in let prn = sprintf entry_fmt md5 (TimeStamp.brief st.st_mtime) 
+                     (human_size st.st_size) f kind f indicator
+      in {name=f; ext=ext; kind=kind; md5=md5; mtime=st.st_mtime; 
+          size=st.st_size; prn=prn} ?>
+<?(* List filenames, in reverse alphabetical order:
+   *)?>
+<?^let rc x y = - (compare x y)
+    let rec read_all dh files = try read_all dh (readdir dh :: files)
+        with End_of_file -> closedir dh; List.sort rc files ?>
+<?(* Walk through all the files and gather their information, then
+   * generate code to filter based on filename.
+   *)?>
+<?^let list_files d re =
+       let rec loop term files = match files with [] -> term
+         | name::files ->
+           .<let list = try ignore(Str.search_forward .~re name 0);
+                          .~(lift(fileinfo d name)) :: .~term
+                   with Not_found -> .~term
+               in .~(loop .<list>. files)>. 
+         in loop .<[]>. (read_all (opendir d) []) ?>
+<?(* Generate code to print the option tags, adding the `selected'
+   * attribute as appropriate.
+   *)?>
+<?^let rec ord_options puts ord opts = 
+      match opts with [] -> .<()>. | (tag,text)::opts ->
+      .<(kprintf .~puts "<option %s value='%s'>%s</option>\n"
+         (if .~ord = tag then "selected" else "") tag text;
+        .~(ord_options puts ord opts))>. 
+(* End of `dir.meta' *)
+?>

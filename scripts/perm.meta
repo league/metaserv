@@ -1,4 +1,2 @@
-<?^open Unix   
-    let cwd = stat "." ?>
-Permissions on current directory are
-<?"%04o" cwd.st_perm ?>
+<?^open Unix let cwd = stat "." ?>
+Permissions on current directory are <?"%04o" cwd.st_perm ?>

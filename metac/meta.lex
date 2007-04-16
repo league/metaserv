@@ -43,6 +43,7 @@ type arg = lexresult arg
 <TRACE>"?>"   => (<<yytext RP before YYBEGIN INITIAL);
 <TRACE>"?>\n" => (<<yytext RP before YYBEGIN INITIAL);
 <TRACE>"(*"   => (YYBEGIN COMMENT; continue());
+<TRACE>"\""   => (YYBEGIN STR; continue());
 <TRACE>".<"   => (<<yytext LANGLE);
 <TRACE>">."   => (<<yytext RANGLE);
 <TRACE>"("    => (<<yytext LPAREN);

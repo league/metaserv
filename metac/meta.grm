@@ -71,12 +71,14 @@ page
 
   | LP decl RP page
       (addC page (fn c=>
-         let val (buf, term) = decl
-             val code = [L c]
-             val code = if term then code
-                        else (S ";\n"::code)
-          in L buf::code
-         end))
+         case decl
+           of ([], _) => c
+            | (buf, term) =>
+              let val code = [L c]
+                  val code = if term then code
+                             else (S ";\n"::code)
+               in L buf::code
+              end))
   | LP_CODE CODE RP page
       (addC page (fn c=> [S ".~(", S CODE, S ");\n", L c]))
   | LP_LIFT CODE RP page
@@ -123,6 +125,7 @@ argl
 
 notcex
   : CODE              ([S CODE])
+  | STRING            ([S "\"", S STRING, S "\""])
   | SEMI              ([S ";"])
   | LBRACK any RBRACK ([S "[", L any, S "]"])
   | LCURLY any RCURLY ([S "{", L any, S "}"])

@@ -1,32 +1,20 @@
-\usepackage{struktur,bodoni}
-%% Following is for fiddling with acmproc-sp fonts
-\font\ixpt      = 5bdrx7t at 9pt
-\font\confname  = 5bdrix7t at 8pt
-\font\crnotice  = 5bdrx7t at 8pt
-\font\ninept    = 5bdrx7t at 9pt
-\font\secfnt    = 5sxb7t at 12pt
-\font\subsecfnt = 5sxb7t at 11pt
-\font\ttlfnt    = 5sxh7t at 18pt
-\font\subttlfnt = 5sxb7t at 14pt
-\font\aufnt     = 5sxb7t at 11pt
-\font\affaddr   = 5sxr7t at 10pt
-\font\eaddfnt   = 5sxr7t at 10pt
-
-\font\CMfont = 5bdrx7t at 9pt  % comments (text)
-\font\KWfont = 5sxb7t at 8pt   % keywords
-\font\VRfont = 5sxr7t at 8pt   % variables
-\font\BGfont = 5sxr7t at 8pt   % other (code)
-
-\font\rawcm  = 5bdr8r at 9pt  % should match \CMfont
-\font\rawrm  = 5sxr8r at 8pt  % should match \BGfont
-\font\rawbf  = 5sxb8r at 8pt
-\font\rawhv  = 5sxh8r at 8pt
+\def\setcodefonts#1#2{
+  \font\CMfont = cmr12 at #1  % comments (text)
+  \font\KWfont = cmssbx10 at #1   % keywords
+  \font\VRfont = cmss12 at #1   % variables
+  \font\BGfont = cmss12 at #1   % other (code)
+  \font\rawcm  = ecrm1000 at #2  % should match \CMfont
+  \font\rawrm  = ecss1000 at #2  % should match \BGfont
+  \font\rawbf  = ecsx1000 at #2
+  \font\rawhv  = ecsx1000 at #2
+}
+\setcodefonts{12pt}{11pt}
 
 \def\labelitemi{\textbullet}
 \def\la{{\rawrm\char'074}}
 \def\ra{{\rawrm\char'076}}
-\def\codeleq{{\rawrm\char'235}}
-\def\codeminus{{\rawrm\char'226}}
+\def\codeleq{{\ensuremath\leq}}
+\def\codeminus{{\ensuremath-}}
 \def\codelb{{\rawrm\char'173}}
 \def\coderb{{\rawrm\char'175}}
 \def\textlt{{\rawcm\char'074}}
@@ -39,7 +27,7 @@
 \definecolor{blue}{rgb}{0,0,.6}
 \definecolor{red}{rgb}{.6,0,0}
 
-\def\Mop#1{{\color{blue}{#1}}}
+\def\Mop#1{{#1}}
 \def\Mbegincode{\Mop{\rawhv.\la}\thinspace}
 \def\Mendcode{\thinspace\Mop{\ra\rawhv.}}
 \def\Msplice{\Mop{\rawhv.\char'176}}
@@ -47,7 +35,7 @@
 \def\Mbang{{\rawhv!}}
 \def\Mrun{\Mop{\rawhv.!}}
 
-\def\Msp#1{{\color{green}{#1}}}
+\def\Msp#1{{#1}}
 \def\Mquote#1{\Msp{\rawhv\char'074{\rawbf?}#1}\thinspace}
 \def\Munquote{\thinspace\Msp{{\rawbf?}{\rawhv\char'076}}}
 
