@@ -1,0 +1,17 @@
+# Remove initial and terminal lines from Meta files.
+# They are used to force us into "comment" mode by default.
+s:^.*\?\\>RM.*$:{\\C{}}:
+s:^.*RM\\<\?.*$:{\\CE{}}:
+
+# MetaOCaml operators
+s:\.\\<:\\Mbegincode:g
+s:\\>\.:\\Mendcode:g
+s:\.\\~:\\Msplice:g
+
+# Server page operators
+s:\\<?\(\(\\CE{}\|\\S{}\)*\)\(\(\\~{}\|!\|\\5\|=\)*\):\\Mquote{\3}\1:g
+s:\?\\>:\\Munquote:g
+
+# Miscellaneous syntactic niceties
+s:\\-\\!\\>:\\ensuremath\\rightarrow:g
+s:\\<=:\\ensuremath\\leqslant:g

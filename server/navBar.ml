@@ -28,21 +28,21 @@ let gen spec tag =
   let sel = ref 0 in
   let each top_p i (uri,txt,select_p) =
     add_string buf
-      (Printf.sprintf "<li %s><a href=\"%s\">%s</a></li>\n"
+      (Printf.sprintf "<li %s><a href='%s'>%s</a></li>\n"
          (match top_p, select_p with
-         | false, true -> "id=\"subselected\""
+         | false, true -> "id='subselected'"
          | true, true -> 
              (sel := i;
-              Printf.sprintf "id=\"selected\" class=\"nav%d\"" i)
+              Printf.sprintf "id='selected' class='nav%d'" i)
          | _ -> "")
          uri txt) in
   let top, sub = find spec tag [] None in
-  add_string buf "<div id=\"nav\"><ul class=\"menu\">\n";
+  add_string buf "<div id='nav'><ul class='menu'>\n";
   iter (each true) 0 top;
   add_string buf 
-    (Printf.sprintf "</ul><ul class=\"submenu\" id=\"nav%d\">\n" (!sel));
+    (Printf.sprintf "</ul><ul class='submenu' id='nav%d'>\n" (!sel));
   iter (each false) 0 sub;
-  add_string buf "<li></li></ul></div><div id=\"body\">\n";
+  add_string buf "<li></li></ul></div><div id='body'>\n";
   contents buf
   
 (* tag, uri, text, children *)

@@ -27,6 +27,8 @@ EPSTOPDF = epstopdf
 TEXI2DVI = texi2dvi
 TEXI2PDF = texi2pdf
 DVIPS = dvips
+LGRIND = lgrind -d paper/lgrindef 
+LSED = sed -f paper/lgrindsub
 
 # Sizes to generate for benchmarking, etc.
 static_sizes = 01 02 04 08 16 32 64
@@ -59,7 +61,7 @@ tex_junk = aux bbl blg log out
 clean: mostlyclean
 	$(RM) metac/metac.*-* server/*.cm?
 	$(RM) scripts/run $(ml_files)
-	$(RM) $(screens_png) $(screens_eps)
+	$(RM) $(screens_png) $(screens_eps) $(listings_tex)
 	$(RM) $(figs_tex) $(figs_eps) $(figs_pdf)
 	$(RM) $(addprefix paper/paper., $(tex_junk) dvi ps 2ps)
 	$(RM) -r paper/auto
@@ -112,17 +114,34 @@ bench/d.%:
 	$(EPSTOPDF) $<
 
 # GNUplot
-%.eps %.tex: %.gp
-	cd $(dir $<) && $(GNUPLOT) $(notdir $<)
+paper/%.eps paper/%.tex: bench/%.gp
+	cd bench && $(GNUPLOT) $*.gp
+	mv bench/$*.eps paper
+	mv bench/$*.tex paper
 
 # LaTeX
 %.pdf: %.tex
-	cd $(dir $<) && TEXINPUTS=$(TEXINPUTS) $(TEXI2PDF) $(notdir $<)
+	cd $(dir $<) && $(TEXENV) $(TEXI2PDF) $(notdir $<)
 %.dvi: %.tex
-	cd $(dir $<) && TEXINPUTS=$(TEXINPUTS) $(TEXI2DVI) $(notdir $<)
+	cd $(dir $<) && $(TEXENV) $(TEXI2DVI) $(notdir $<)
 %.ps: %.dvi
 	cd $(dir $<) && \
-	TEXINPUTS=$(TEXINPUTS) $(DVIPS) -o $(notdir $@) $(notdir $<)
+	$(TEXENV) $(DVIPS) -o $(notdir $@) $(notdir $<)
+
+# code -> LaTeX
+LGRIND_CFG := paper/lgrindef paper/lgrindsub
+paper/%.ml.tex: scripts/%.ml $(LGRIND_CFG)
+	$(LGRIND) -i -lOCaml $< | $(LSED) >$@
+
+paper/%.mli.tex: server/%.mli $(LGRIND_CFG)
+	$(LGRIND) -i -lOCaml $< | $(LSED) >$@
+
+paper/%.meta.tex: scripts/%.meta $(LGRIND_CFG)
+	(echo '?>RM'; cat $<; echo 'RM<?') \
+	  | $(LGRIND) -i -lMeta - | $(LSED) >$@
+
+paper/%.tex: paper/%.ltx $(LGRIND_CFG)
+	$(LGRIND) -e -a -lOCaml $< | $(LSED) >$@
 
 ###################################################################
 ###  Dependencies
@@ -145,7 +164,7 @@ metac_sources := $(addprefix metac/, $(shell tail +2 metac/metac.cm))
 metac/metac.$(HEAP): $(metac_sources)
 
 # for paper:
-figures := $(addprefix bench/, static browse power)
+figures := $(addprefix paper/, static browse power)
 figs_tex := $(addsuffix .tex, $(figures))
 figs_eps := $(addsuffix .eps, $(figures))
 figs_pdf := $(addsuffix .pdf, $(figures))
@@ -154,10 +173,14 @@ screens := $(addprefix paper/, confcal power127 server-dir gc)
 screens_png := $(addsuffix .png, $(screens))
 screens_eps := $(addsuffix .eps, $(screens))
 
-TEXINPUTS = ../bench:../scripts:
-tex_files = $(addprefix paper/, fonts.tex refs.bib)
-paper/paper.pdf: $(tex_files) $(screens_png) $(figs_tex) $(figs_pdf)
-paper/paper.dvi: $(tex_files) $(screens_eps) $(figs_tex) $(figs_eps)
+listings := trans.ml navspec-sig.ml codeHandler.mli \
+    $(addsuffix .meta, first pi perm perm2 perm3 count power dir gc trans)
+listings_tex := $(addprefix paper/, $(addsuffix .tex, $(listings)))
+
+TEXENV = 
+tex_files = paper/fonts.tex paper/refs.bib $(figs_tex) $(listings_tex)
+paper/paper.pdf: $(tex_files) $(screens_png) $(figs_pdf)
+paper/paper.dvi: $(tex_files) $(screens_eps) $(figs_eps)
 
 ###################################################################
 ###  Generating code map and run script 
@@ -167,7 +190,7 @@ plain_pages := /gc/Gc /Index /about/About /uname/Uname \
   /perm2/Perm2 /perm3/Perm3 /count/Count
 dir_pages := metac paper scripts server bench images
 
-script_names := dir dirUn power powerUn \
+script_names := dir dirUn power powerUn trans \
   $(addprefix static, $(static_sizes)) \
   $(notdir $(shell echo $(plain_pages) | tr '[A-Z]' '[a-z]'))
 

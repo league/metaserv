@@ -12,15 +12,21 @@ type arg = lexresult arg
 %%
 
 <INITIAL>"<?^"    => (<<yytext LP_DECL before YYBEGIN PROC);
-<INITIAL>"<?~="   => (<<yytext LP_CODE_EQ before YYBEGIN PROC);
-<INITIAL>"<?="    => (<<yytext LP_EQ before YYBEGIN PROC);
-<INITIAL>"<?~"    => (<<yytext LP_CODE before YYBEGIN PROC);
 <INITIAL>"<?pragma" => (<<yytext LP_PRAGMA before YYBEGIN PROC);
 
+<INITIAL>"<?"     => (<<yytext LP before YYBEGIN TRACE);
+<INITIAL>"<?="    => (<<yytext LP_EQ before YYBEGIN PROC);
 <INITIAL>"<?\""   => (<<yytext LP_FMT before YYBEGIN STR);
+
+<INITIAL>"<?~"    => (<<yytext LP_CODE before YYBEGIN PROC);
+<INITIAL>"<?~="   => (<<yytext LP_CODE_EQ before YYBEGIN PROC);
 <INITIAL>"<?~\""  => (<<yytext LP_CODE_FMT before YYBEGIN STR);
 <INITIAL>"<?~let" => (<<yytext LP_CODE_LET before YYBEGIN TRACE);
-<INITIAL>"<?"     => (<<yytext LP before YYBEGIN TRACE);
+
+<INITIAL>"<?!"    => (<<yytext LP_LIFT before YYBEGIN PROC);
+<INITIAL>"<?!="   => (<<yytext LP_LIFT_EQ before YYBEGIN PROC);
+<INITIAL>"<?!\""  => (<<yytext LP_LIFT_FMT before YYBEGIN STR);
+<INITIAL>"<?!let" => (<<yytext LP_LIFT_LET before YYBEGIN TRACE);
 
 <INITIAL>[^<]+    => (push yytext; <<$(dump()) "text" TEXT);
 <INITIAL>"<"      => (push yytext; continue());

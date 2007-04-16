@@ -1,5 +1,5 @@
-<?~=lift(preamble "Home")?>
-<?~=lift(navbar "/")?>
+<?!=preamble "Home" ?>
+<?!=navbar "/" ?>
 <h1>MetaOCaml Server Pages</h1>
 
 <p>This is an example.  

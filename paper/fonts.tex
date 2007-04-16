@@ -1,63 +1,4 @@
-\makeatletter
 \usepackage{struktur,bodoni}
-\def\labelitemi{\textbullet}
-\def\la{{\rawrm\char'074}}
-\def\ra{{\rawrm\char'076}}
-\iffalse
-\renewcommand{\Large}{\sffamily\fontsize\@xivpt{18}}
-\renewcommand\section{\@startsection{section}{1}{\z@}%
-                       {-18\p@ \@plus -4\p@ \@minus -4\p@}%
-                       {12\p@ \@plus 4\p@ \@minus 4\p@}%
-                       {\sffamily\large\bfseries\boldmath
-                        \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
-\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
-                       {-18\p@ \@plus -4\p@ \@minus -4\p@}%
-                       {8\p@ \@plus 4\p@ \@minus 4\p@}%
-                       {\sffamily\normalsize\bfseries\boldmath
-                        \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
-\fi
-
-\def\opencode{{\rawhv\char'074}{\rawbf?}}
-\def\closecode{{\rawbf?}{\rawhv\char'076}}
-\lstdefinelanguage{meta}
-  {morekeywords={and,as,begin,do,done,downto,else,end,exception,for,%
-      fun,if,in,let,match,val,mutable,not,of,open,or,prefix,rec,then,%
-      try,while,with},%
-   morecomment=[n]{(*}{*)},%
-   morestring=[b]",%
-   escapeinside={(*@}{@*)},%
-   literate=
-     {->}{$\rightarrow\;$}2
-     {<}{\la}1
-     {>}{\ra}1
-     {\\}{{\rawrm\char'134}}1
-     {|}{{\rawrm\char'174}\thinspace}1
-     {<=}{{\rawrm\char'235}\thinspace}1
-     {"}{{\rawrm\char'042}}1
-     {'}{{\rawrm\char'264}}1
-     {<?}{{\color{green}\opencode}\thinspace}2
-     {<?pragma}{{\color{green}\opencode}pragma\ }8
-     {<?^}{{\color{green}\opencode{\rawhv\char'136}}}3
-     {<?"}{{\color{green}\opencode{\rawrm\char'042}}}3
-     {<?~}{{\color{green}\opencode{\rawhv\char'176}}}3
-     {<?=}{{\color{green}\opencode{\rawhv\char'075}}\thinspace}3
-     {<?~=}{{\color{green}\opencode{\rawhv\char'176\char'075}}\thinspace}4
-     {?>}{\thinspace{\color{green}\closecode}}2
-     {.<}{{\color{blue}\rawhv.\char'074}\thinspace}2
-     {>.}{\thinspace{\color{blue}\rawhv\char'076.}}2
-     {.~}{{\color{blue}\rawhv.\char'176}}2
-   }
-
-\definecolor{green}{rgb}{0,.6,0}
-\definecolor{blue}{rgb}{0,0,.6}
-\lstset{columns=fullflexible,
-  basicstyle=\sffamily,
-  keywordstyle=\bfseries, belowskip=0pt,
-  numbers=left, numberstyle=\tiny, numbersep=4pt
-}
-
-\lstset{language=meta}
-
 %% Following is for fiddling with acmproc-sp fonts
 \font\rawrm     = 5sxr8r at 9pt
 \font\rawbf     = 5sxb8r at 9pt
@@ -73,7 +14,31 @@
 \font\aufnt     = 5sxb7t at 11pt
 \font\affaddr   = 5sxr7t at 10pt
 \font\eaddfnt   = 5sxr7t at 10pt
-\makeatother
+
+\font\CMfont = 5bdrx7t at 9pt
+\font\KWfont = 5sxb7t at 8pt
+\font\VRfont = 5sxr7t at 8pt
+\font\BGfont = 5sxr7t at 8pt
+
+\def\labelitemi{\textbullet}
+\def\la{{\rawrm\char'074}}
+\def\ra{{\rawrm\char'076}}
+\def\cd#1{{\BGfont#1}}
+\def\id#1{\texttt{#1}}
+\def\to{\ensuremath\rightarrow}
+
+\definecolor{green}{rgb}{0,.6,0}
+\definecolor{blue}{rgb}{0,0,.6}
+
+\def\Mop#1{{\color{blue}{#1}}}
+\def\Mbegincode{\Mop{\rawhv.\la}\thinspace}
+\def\Mendcode{\thinspace\Mop{\ra\rawhv.}}
+\def\Msplice{\Mop{\rawhv.\char'176}}
+\def\Mtilde{\Mop{\char'176}}
+
+\def\Msp#1{{\color{green}{#1}}}
+\def\Mquote#1{\Msp{\rawhv\char'074{\rawbf?}#1}\thinspace}
+\def\Munquote{\thinspace\Msp{{\rawbf?}{\rawhv\char'076}}}
 
 %%% Local Variables: 
 %%% mode: latex

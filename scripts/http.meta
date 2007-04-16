@@ -1,4 +1,4 @@
-<?~=lift(preamble "HTTP headers")?>
-<?~=lift(navbar "/http")?>
+<?!=preamble "HTTP headers" ?>
+<?!=navbar "/http" ?>
 <?Request.dump puts req?>
-<?=postamble?>
+<?=postamble ?>

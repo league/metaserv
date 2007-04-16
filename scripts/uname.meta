@@ -1,5 +1,5 @@
-<?~=lift(preamble "Server architecture")?>
-<?~=lift(navbar "/uname")?>
+<?!= preamble "Server architecture" ?>
+<?!= navbar "/uname" ?>
 <?^let run cmd =
      let i = Unix.open_process_in cmd in
      let result = input_line i in

@@ -1,5 +1,6 @@
 \documentclass[preprint]{acm_proc_article-sp}
-\usepackage{ucs,textcomp,url,graphicx,color,listings}
+\usepackage{ucs,textcomp,url,graphicx,color}
+\usepackage[leftno,lineno5]{lgrind}
 \usepackage[bf]{caption2}
 \usepackage[numbers]{natbib}
 \usepackage[utf8]{inputenc}
@@ -27,11 +28,18 @@
     \includegraphics[width=20pc,keepaspectratio]{#1}}}
 \newcommand{\gnuplot}[2]{%
   \myfig{#1}{#2}{\input{#1}}}
-\newcommand{\mylst}[3]{%
-  \lstinputlisting[#1 label={lst:#2}, %
-    caption={\texttt{#2}.  #3}]{#2}}
-\newcommand{\lstfile}{\mylst{}}
-\newcommand{\lstfloat}{\mylst{float=htb,}}
+\newcommand{\listing}[2]{\lagrind[tbp]{#1}{#2}{lst:#1}}
+
+\newcounter{listing}
+\setcounter{listing}{0}
+\makeatletter
+\def\ext@listing{lol}
+\def\fnum@listing{Listing\nobreakspace\thelisting}
+\makeatother
+\newcommand{\mylst}[2]{%
+  \captionof{listing}{\textbf{#1.} #2}%
+  \label{lst:#1}%
+  \lgrindfile{#1}}
 
 \title{\MOC{} Server Pages:}
 \subtitle{Web Publishing as Staged Computation}
@@ -44,11 +52,7 @@
 \conferenceinfo{\MOC{} Workshop}{October 2004, Vancouver}
 \CopyrightYear{2004}
 \toappear{Submitted to the \MOC{} Workshop (Vancouver,
-  2004).\\\textbf{Note from author:} Sorry, the exposition gets
-  really rough toward the end: too much hacking and not enough 
-  writing!  If the PC agrees that this is a worthwhile 
-  idea, I'll be happy to fix the paper \emph{ex post
-    facto\ldots}} 
+  2004).}
 
 \begin{document}
 \maketitle
@@ -284,12 +288,11 @@ discussed in section~\ref{sec:perf}
 
 The general idea of a \emph{server page} language is that we
   write HTML by default, and embed code %
-\lstinline{<?like this?>}.  %
+\cd{\Mquote{}like this\Munquote}.
 PHP programmers are familiar with this syntax for embedding code, but
 in our case, the code itself is written in \MOC.  Here is your first
 \MOC{} server page:
-
-\lstinputlisting{first.meta}
+\lgrindfile{first.meta}
 and its output:
 \begin{quote}
   \textit{Hello,} \textbf{Unhandled exception: Failure("Nice try!")}
@@ -298,63 +301,44 @@ If a code block raises an exception, the message is sent to the
 client's browser in bold-face, and the rest of the page is
 aborted. 
 
-\def\cd#1{\lstinline{#1}}
-\def\id#1{\texttt{#1}}
-
 A very common use of code blocks is to print out (i.e., send to
 the browser) the result of evaluating some expression.  The
-syntax \cd{<?= e?>} is designated for this task; \cd{e} must
-have type \id{string}.  Alternatively, messages may be formatted
-with \id{printf} by placing the format string immediately after
-the code delimiter: \lstinputlisting{pi.meta}
+syntax \cd{\Mquote= e\Munquote} is designated for this task; \cd{e} must
+have type \cd{string}.  Alternatively, messages may be formatted
+with \cd{printf} by placing the format string immediately after
+the code delimiter: \lgrindfile{pi.meta}
 \begin{quote}
   ........ $\pi$ ÷ 008 is 0.3927
 \end{quote}
-In a departure from the standard OCaml syntax for \id{printf}, the
+In a departure from the standard OCaml syntax for \cd{printf}, the
 arguments are comma-delimited.
 %%
 One more kind of code delimiter is used for \emph{declarations;}
 these are evaluated during the publishing stage:
-\lstinputlisting{perm.meta}
+\lgrindfile{perm.meta}
 \begin{quote}
 Permissions on current directory are 0755
 \end{quote}
 
-Once published, this output will never change!  The \id{stat}
+Once published, this output will never change!  The \cd{stat}
 call is executed only once, not on each request.
 
 To see how all this works, let's consider how a \MOC{} server
 page is translated into a proper \MOC{} program, to be executed
 at publish time.  Since the program is executed before any
 browser has requested the page, it cannot directly return or
-output HTML.  Instead, it will construct and return a \id{code}
+output HTML.  Instead, it will construct and return a \cd{code}
 object which is subsequently run on each request (serve stage).
 Listing~\ref{lst:trans.meta} shows a sample \MOC{} server page,
 and listing~\ref{lst:trans.ml} contains its translation.
 
-\lstfloat{trans.meta}{This file demonstrates the various
-  kinds of code blocks.}%
-\begin{lstlisting}[language={[Objective]Caml},
-  label={lst:trans.ml}, float=htb, 
-  caption={\texttt{trans.ml}.  This is the translation of the
-    page in listing~\ref{lst:trans.meta}.  Declarations have
+\mylst{trans.meta}{This file demonstrates the various
+  kinds of code blocks.}
+
+\mylst{trans.ml}{This is the translation of the
+    page in figure~\ref{lst:trans.meta}.  Declarations have
     been lifted, and everything else appears within
-    \lstinline{.<brackets>.}}]
-module Trans = struct
-  let lift x = .<x>.
-  (* Declarations *)  
-  (* More declarations *) 
-  let page  = .<fun req puts -> (*@\label{line:page}@*)
-    let arg = Request.arg req in 
-    (* Code *) ;
-    puts ( (* String to be printed *) );
-    puts "Regular text.\n";
-    Printf.kprintf puts "format string" ( a )  ( b )  ( c ) ;
-    let x = (* Expression *) in (*@\label{line:in}@*)
-    (* More code *) ;
-    puts "Bye!\n";>.
-end
-\end{lstlisting}
+    \cd{\Mbegincode brackets\Mendcode}}
 
 Declaration blocks have been lifted to the top; any side effects
 contained there are executed when the page is published.  The
@@ -362,10 +346,10 @@ constructed code begins on line~\ref{line:page} of
 listing~\ref{lst:trans.ml}.  It is a function of two arguments:
 \cd{req} encapsulates the HTTP request, including the headers
 and query arguments; \cd{puts} is a function with type
-\cd{string->unit}; it transmits text across the network to the
+\cd{string\to unit}; it transmits text across the network to the
 visitor's browser.  \cd{arg} looks up an
 argument in the query string of the request; its type is
-\cd{string->string option}.  These are all \emph{serve} (second)
+\cd{string\to string option}.  These are all \emph{serve} (second)
 stage values.  It makes no sense to access them in the
 \emph{publish} (first) stage, and indeed the \MOC{} type system
 prevents this.
@@ -373,25 +357,25 @@ prevents this.
 A few finer points to note: the translator discards newlines that
 immediately follow code blocks (otherwise,
 listing~\ref{lst:trans.ml} would be dotted with %
-\lstinline{puts "\n"} statements).  It automatically follows
-code blocks with either a semi-colon or the \lstinline{in}
+\cd{puts}~\verb+"\n"+ statements).  It automatically follows
+code blocks with either a semi-colon or the {\KWfont in}
 keyword, as needed.
 
 Now that we understand how the server page is assembled into a
 staged program, the effects of adding \MOC{} staging operators
 to our pages should be predictable.  Below is a reformulation of
-the permissions example, using escape \cd{.~} and \cd{lift} to
-ensure that \id{stat} is called only once.
-\lstinputlisting{perm2.meta}
+the permissions example, using escape \Msplice{} and \cd{lift} to
+ensure that \cd{stat} is called only once.
+\lgrindfile{perm2.meta}
 %%
-Still, the \id{printf} conversion is performed at serve time, so
+Still, the \cd{printf} conversion is performed at serve time, so
 maybe it is best to pre-generate that as well:
-\lstinputlisting{perm3.meta}
+\lgrindfile{perm3.meta}
 Now, all that remains to execute at serve time is %
 \cd{puts "0755"}.  Finally it is possible to splice in
 additional code at publish time, such as in this count-down
 example:
-\lstinputlisting{count.meta}
+\lgrindfile{count.meta}
 It removes the loop overhead by expanding to a sequence of 99
 \cd{puts} statements.
 
@@ -399,17 +383,18 @@ These tiny examples illustrate some of the common uses of the
 escape operator, for which we developed syntactic sugar:
 
 \begin{tabular}{l@{\quad$\leadsto$\quad}l}
-\cd{<?~ a ?>} &
-\cd{<? .~( a ) ?>}
+\cd{\Mquote{\Mtilde} a \Munquote} &
+\cd{\Mquote{} \Msplice( a ) \Munquote}
 \\
-\cd{<?~= b ?>} &
-\cd{<?= .~( b ) ?>}
+\cd{\Mquote{\Mtilde=} b \Munquote} &
+\cd{\Mquote{=} \Msplice( b ) \Munquote}
 \\
-\cd{<?~let x = c ?>} &
-\cd{<?let x = .~( c ) ?>}
+\cd{\Mquote{\Mtilde}let x = c \Munquote} &
+\cd{\Mquote{} let x = \Msplice( c ) \Munquote}
 \\
-\cd{<?~"fmt" d, e, f?>} &
-\cd{<?"fmt" .~(d), .~(e), .~(f)?>}
+\cd{\Mquote{\Mtilde}\id{"fmt"} d, e, f\Munquote} &
+\cd{\Mquote{}\id{"fmt"} \Msplice(d), \Msplice(e), \Msplice(f)\Munquote}
+\\
 \end{tabular}
 
 where the \cd{a} has type \cd{unit code}; \cd{b} has type
@@ -420,13 +405,9 @@ One last feature in the design of \MOC{} server pages is the ability
 to take publish-stage arguments.  The parameter names are specified to
 the translator in a \emph{pragma} declaration, which can appear
 anywhere in the code:
-\begin{lstlisting}[numbers=none]
-  <?pragma args x y z ?>
-\end{lstlisting}
-The translator inserts these as page parameters, like this:
-\begin{lstlisting}[numbers=none, language={[Objective]Caml}]
-  let page x y z = .< ... >.
-\end{lstlisting}
+
+(EXPLAIN THIS INSTEAD USING TRANS FIGURE)
+
 Now the code can be instantiated with early parameters in countless
 ways.  For example, requesting the URI \id{/longcount} could print a
 count-down from 99, while \id{/shortcount} starts at 9 instead.  Both
@@ -439,19 +420,18 @@ instantiated \MOC{} code is, for now, an implementation detail
 
 To explore the expressiveness of this design, we now look at a
 series of web services, organized to comprise a small web
-site.\footnote{I hope to make the demo available on the web in time
-  for the workshop; this will require convincing the I.T. folks to
-  open up a non-standard port through the firewall.  For now, it may
-  be downloaded and run locally.} %
+site.
+%\footnote{I hope to make the demo available on the web in time
+%  for the workshop; this will require convincing the I.T. folks to
+%  open up a non-standard port through the firewall.  For now, it may
+%  be downloaded and run locally.} %
 To give the services a similar look, we developed a site-wide style
 sheet, and an OCaml function to generate a navigation bar from a
 hierarchical list of page titles and links.  The following bindings are
 available site-wide:
-\begin{lstlisting}[numbers=none]
-  val preamble: string -> string
-  val navbar: string -> string
-  val postamble: string
-\end{lstlisting}
+
+\lgrindfile{navspec-sig.ml}
+
 The first function generates the standard XHTML header given the
 title, while the second function generates the navigation bar given
 the URI denoting the current page.  These can be called at either
@@ -470,7 +450,7 @@ not possible, with the current implementation, for the user to request
 other exponents (see \S\ref{sec:impl} for an explanation).  After
 selecting the exponent, the user types the base into the form and
 presses return.  The result is computed using OCaml's
-arbitrary-precision \id{Num} module.  The implementation of this
+arbitrary-precision \cd{Num} module.  The implementation of this
 service appears in listing~\ref{lst:power.meta}.
 
 \screenshot{power127}{Web browser displaying the result of
@@ -479,7 +459,7 @@ service appears in listing~\ref{lst:power.meta}.
   late argument (\texttt{x}, the base) is taken from the query
   string.}
 
-\lstfile{power.meta}{This implements the staged power function as a
+\mylst{power.meta}{This implements the staged power function as a
   web service.  The exponent \cd{y} is an early (publish stage)
   argument; but the base \cd{x} is late (serve stage).}
 
@@ -536,14 +516,9 @@ The text of each row is ready and waiting.  At serve time, the files
 need not be opened or even \id{stat}ted.  The crux of the
 implementation is shown in listing~\ref{lst:dir.meta}:
 
-\mylst{lastline=39,}{dir.meta}{Implementation of directory
-  browsing service.  This is the page part; some top-level
-  declarations were omitted.  See also
-  listing~\ref{lst:dir.meta-2}.}
+\mylst{dir.meta}{...}
 
-We omitted some of the more mundane functions on this page, but
-\cd{list_files} is important, so it appears in
-listing~\ref{lst:dir.meta-2}.  In the first stage, this reads
+In the first stage, this reads
 all the filenames in the directory and sorts them by name.  Then
 it looks up the fileinfo, computes the MD5 sum, and prepares the
 text of each row.  Finally, it generates code that matches the
@@ -551,10 +526,6 @@ filename against a (future-stage) regular expression, and
 includes it in a list only if it matches.  In the next stage,
 this list will be constructed and sorted (if necessary).  
 
-\mylst{}{dir.meta-2}{This top-level function transforms a list
-  of filenames into a code sequence that tests each name against
-  a regexp, and adds it to the list only in the case of a
-  match.}
 
 \subsection{Server introspection}
 
@@ -571,23 +542,23 @@ using commas every three digits.  The descriptions are copied
 directly from the \id{gc.mli} interface in OCaml.  The only
 thing pre-generated here is the navigation bar (line 2).
 
-\mylst{lastline=30,}{gc.meta}{...}
+%\lgrindfile{gc.meta}
 
 \section{Implementation}
 \label{sec:impl}
 
 
 Currently, the \MOC{} implementation is not capable of reading
-and writing \id{code} values to a file.  This means that
+and writing \cd{code} values to a file.  This means that
 generated server pages (after the publish stage) must already be
 in the server memory when it starts.  This is an unfortunate
 limitation, as it means we must restart the entire web server to
 re-publish any particular page!
 
 A generated server page has this type:
-\begin{lstlisting}[numbers=none]
-  type code = Request.req -> (string -> unit) -> unit
-\end{lstlisting}
+
+\lgrindfile{codeHandler.mli}
+
 As the server starts, it constructs a dictionary (\cd{code
   StringMap.t}) mapping URIs to code.  This dictionary is
 consulted on each HTTP request.  If the URI is not found there,
@@ -640,7 +611,7 @@ popular server-side computation system.\footnote{libphp4.so
   (version 4.3.4) loaded into Apache 1.3} Here, we gave the same
 static data files the extension \texttt{.php}, so that Apache
 would treat them as PHP code, even though they have no
-\lstinline{<?code blocks?>}.
+\cd{\Mquote{}code blocks\Munquote}.
 %%
 We omitted the results for Apache serving static files, because they
 are way off scale: Apache handled an astounding 4,438 hits per second
@@ -720,15 +691,14 @@ mainstream SGML or XML validator.
 \section{Future directions}
 \label{sec:future}
 
-\begin{itemize}
   
-\item This really needs to be a module for a real server, such
+ This really needs to be a module for a real server, such
   as Apache or AOLserver.
   
-\item Need more serious case studies, where one logical service
+ Need more serious case studies, where one logical service
   is implemented across a series of pages.
   
-\item Need to address the major implementation shortcoming, of
+ Need to address the major implementation shortcoming, of
   loading all the generated pages into memory on startup.
   
   Marshalling closures works partly in OCaml, but only if they
@@ -737,7 +707,6 @@ mainstream SGML or XML validator.
   code values could be dumped to a file, but the `persistent'
   functions it refers to will need to be stored somewhere\ldots
 
-\end{itemize}
 
 
 \section{Conclusion}
@@ -758,7 +727,6 @@ We have shown the substantial benefits of this approach in terms
 of performance and expressiveness, although the prototype
 implementation suffers some limitations because it is unable to
 read and write generated code to a file.
-
 
 \bibliographystyle{abbrvnat}
 \raggedright

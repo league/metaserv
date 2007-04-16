@@ -1,8 +1,9 @@
+<?pragma args a b c ?>
 <?^ (* Declarations *) ?>
 <? (* Code *) ?>
 <?= (* String to be printed *) ?>
 Regular text.
-<?"format string" a, b, c ?>
+<?"format string" d, e, f ?>
 <?^ (* More declarations *) ?>
 <? let x = (* Expression *) ?>
 <? (* More code *) ?>

@@ -1,6 +1,6 @@
-<?~=lift(preamble "Uptime")?>
-<?~=lift(navbar "/uptime")?>
-<?~let start = lift(Unix.time())?>
+<?!=preamble "Uptime" ?>
+<?!=navbar "/uptime" ?>
+<?!let start = Unix.time() ?>
 <?^let unit s k n = 
      let m = floor(n /. k) in
      Printf.sprintf "%.0f %s%s" m s

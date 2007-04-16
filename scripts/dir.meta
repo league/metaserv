@@ -1,7 +1,7 @@
 <?pragma args uri d ?>
 <?^open Printf open Unix open List ?>
-<?~=lift(preamble("browsing "^d))?>
-<?~=lift(navbar uri)?>
+<?!=preamble("browsing "^d) ?>
+<?!=navbar uri ?>
 <?^let default_re = "^[^\\.].*[^~]$" ?>
 <?^let default_re = (default_re, Str.regexp default_re)?>
 <? let (re,rc) = match arg "re" with
@@ -12,109 +12,111 @@
      match opts with [] -> .<()>.
      | (tag,text)::opts ->
      .<(kprintf .~puts 
-          "<option %s value=\"%s\">%s</option>\n"
+          "<option %s value='%s'>%s</option>\n"
           (if .~ord = tag then "selected" else "") tag text;
        .~(ord_options puts ord opts))>. ?>
 <? let ord = match arg "ord" with
        None -> "name" | Some o -> o ?>
-<form method="get" action="">
-<input type="submit" value="Redisplay" />
-files matching
-<input type="text" name="re" size="14" value="<?=re?>" />
-ordered by
-<select name="ord">
-  <?~ord_options .<puts>. .<ord>.
-       ["name", "Name";
-        "ext",  "Extension";
-        "time", "Timestamp";
-        "size", "Size";
-        "kind", "Kind"] ?>
-</select>
+<form method='get' action=''>
+  <input type='submit' value='Redisplay' />
+ files matching
+  <input type='text' name='re' size='14' value='<?=re?>' />
+ ordered by
+  <select name='ord'>
+    <?~ord_options .<puts>. .<ord>.
+         ["name", "Name";
+          "ext",  "Extension";
+          "time", "Timestamp";
+          "size", "Size";
+          "kind", "Kind"] ?>
+  </select>
 </form>
 <pre>
 <?=header?>
 <? iter (fun f -> puts f.prn) list ?>
 </pre>
-<form method="post" action="<?= uri ?>!">
-<input type="submit" value="Regenerate" />
+<form method='post' action='<?=uri?>!'>
+<input type='submit' value='Regenerate' />
 </form>
 <?=postamble?>
 
 <?^ 
-type fileinfo =
-    { name: string;
-      ext: string;
-      kind: string;
-      mtime: float;
-      size: int;
-      md5: string;
-      prn: string
-    }
-
+type fileinfo = {
+    name: string;  (* full name *)
+    ext: string;   (* extension *)
+    kind: string;
+    mtime: float;
+    size: int;
+    md5: string;
+    prn: string
+  }
+(* Here's what it will look like if I 
+   document this file effectively. *)
+let cmp_ext f1 f2 = compare f1.ext f2.ext
+let cmp_kind f1 f2 = compare f1.kind f2.kind
+let cmp_mtime f1 f2 = compare f1.mtime f2.mtime
+let cmp_size f1 f2 = compare f1.size f2.size
 let sort_by order list = match order with
-    Some "ext"  -> stable_sort (fun f1 f2 -> compare f1.ext f2.ext) list
-  | Some "kind" -> stable_sort (fun f1 f2 -> compare f1.kind f2.kind) list
-  | Some "time" -> stable_sort (fun f1 f2 -> compare f1.mtime f2.mtime) list
-  | Some "size" -> stable_sort (fun f1 f2 -> compare f1.size f2.size) list
-  | _ -> list
+    | Some "ext"  -> stable_sort cmp_ext list
+    | Some "kind" -> stable_sort cmp_kind list
+    | Some "time" -> stable_sort cmp_mtime list
+    | Some "size" -> stable_sort cmp_size list
+    | _ -> list
 
-  let human_size n = 
-    if n < 1024 then sprintf "%4d " n
-    else if n < 102400 then sprintf "%4.1fk" (float_of_int n/.1024.)
-    else if n < 1024000 then sprintf "%4dk" (n/1024)
-    else if n < 104857600 then sprintf "%4.1fM" (float_of_int n/.1048576.)
-    else sprintf "%4dM" (n/1048576)
+let human_size n = 
+  if n < 1024 then sprintf "%4d " n
+  else if n < 102400 
+  then sprintf "%4.1fk" (float_of_int n/.1024.)
+  else if n < 1024000 
+  then sprintf "%4dk" (n/1024)
+  else if n < 104857600 
+  then sprintf "%4.1fM" (float_of_int n/.1048576.)
+  else sprintf "%4dM" (n/1048576)
 
-  let entry_fmt = format_of_string
-"<span class=\"md5\">%-32s</span>  %-13s  %5s  <a class=\"file\" href=\"%s\"><span class=\"%s\">%s</span></a>%s\n"
-  let header = sprintf
+let entry_fmt = format_of_string
+  "<span class='md5'>%-32s</span>  %-13s  %5s  \
+   <a class='file' href='%s'><span class='%s'>\
+   %s</span></a>%s\n"
+
+let header = sprintf
       "<b>%-32s  %-13s  %-5s  %s</b>\n"
       "checksum" "last modified" "size" "name"
 
-  let fileinfo d name =
- (* printf "%s\n%!" name; *)
-    let path = Filename.concat d name in
-    let st = stat path in
-    let md5 = 
-      if st.st_kind = S_REG 
-      then Digest.to_hex (Digest.file path)
-      else "" in
-    let ext = 
-      try let i = String.rindex name '.' + 1 in
-          Str.string_after name i
-      with Not_found -> "" in
-    let (kind, indicator) = 
-      match st.st_kind with
-      | S_DIR  -> ("dir", "/")
-      | S_LNK  -> ("symlink", "@")
-      | S_FIFO -> ("fifo", "|")
-      | S_SOCK -> ("sock", "=")
-      | S_CHR  -> ("cdev", "")
-      | S_BLK  -> ("bdev", "")
-      | S_REG ->
-          let k =
-            match ext with
-            | "a"   -> "lib"
-            | "cma" -> "lib"
-            | "cmi" -> "obj"
-            | "cmo" -> "obj"
-            | "ml"  -> "src"
-            | "sml" -> "src"
-            | "mli" -> "hdr"
-            | "sig" -> "hdr"
-            | _ -> "" in
-          let i =
-            if st.st_perm land 0o111 = 0 then "" else "*" in
-          match (k,i) with
-          | ("", "*") -> ("exe", "*")
-          | other -> other in
-    let prn = 
-      sprintf entry_fmt md5
-        (TimeStamp.brief st.st_mtime) 
-        (human_size st.st_size)
-        name kind name indicator
-    in
-    {name=name; ext=ext; kind=kind;
+let reg_kinds ext perm =
+  let k = match ext with
+      | "a"   -> "lib" | "cma" -> "lib"
+      | "cmi" -> "obj" | "cmo" -> "obj"
+      | "ml"  -> "src" | "sml" -> "src"
+      | "mli" -> "hdr" | "sig" -> "hdr"
+      | _ -> "" in
+  let i = if perm land 0o111 = 0 then "" else "*" in
+  match (k,i) with
+  | ("", "*") -> ("exe", "*")
+  | other -> other
+
+let fileinfo d name =
+  let path = Filename.concat d name in
+  let st = stat path in
+  let md5 = if st.st_kind = S_REG 
+    then Digest.to_hex (Digest.file path) else "" in
+  let ext = 
+    try let i = String.rindex name '.' + 1 in
+        Str.string_after name i
+    with Not_found -> "" in
+  let (kind, indicator) = 
+    match st.st_kind with
+    | S_DIR  -> ("dir", "/")
+    | S_LNK  -> ("symlink", "@")
+    | S_FIFO -> ("fifo", "|")
+    | S_SOCK -> ("sock", "=")
+    | S_CHR  -> ("cdev", "")
+    | S_BLK  -> ("bdev", "")
+    | S_REG -> reg_kinds ext st.st_perm in
+  let prn = sprintf entry_fmt md5
+      (TimeStamp.brief st.st_mtime) 
+      (human_size st.st_size)
+      name kind name indicator
+  in {name=name; ext=ext; kind=kind;
       mtime=st.st_mtime; size=st.st_size;
       prn=prn; md5=md5}
 
@@ -122,20 +124,16 @@ let cmp x y = - (compare x y)
 
 let rec read_all dh files = 
   try read_all dh (readdir dh :: files)
-  with End_of_file ->
-    closedir dh;
-    sort cmp files
-?>
+  with End_of_file -> closedir dh; sort cmp files
 
-<?^let list_files d re =
-     let rec loop term files =
-       match files with
-         [] -> term
-       | name::files ->
-         .<let list =
-             try ignore(Str.search_forward .~re name 0);
-                 .~(lift(fileinfo d name)) :: .~term
-             with Not_found -> .~term
-           in .~(loop .<list>. files)>. in
-     loop .<[]>. (read_all (opendir d) [])
- ?>
+let list_files d re =
+  let rec loop term files =
+    match files with [] -> term
+    | name::files ->
+      .<let list =
+          try ignore(Str.search_forward .~re name 0);
+              .~(lift(fileinfo d name)) :: .~term
+          with Not_found -> .~term
+        in .~(loop .<list>. files)>. 
+in loop .<[]>. (read_all (opendir d) [])
+?>

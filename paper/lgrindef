@@ -1,0 +1,12 @@
+OCaml:\
+        :cb=\(\*:ce=\*\):sb=":se=":\
+        :id=_':pb=fun:\
+        :kw=module struct let fun in end open rec if then else \
+        type val match with while do done try ;:
+
+Meta:\
+        :cb=\(\*:ce=\*\):sb=":se=":\
+        :id=_':pb=fun:\
+        :ab=\?>:ae=<\?:\
+        :kw=module struct let fun in end open rec if then else \
+        type val match with while do done try ;:

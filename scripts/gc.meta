@@ -1,5 +1,5 @@
-<?~=lift(preamble "GC statistics")?>
-<?~=lift(navbar "/gc")?>
+<?!=preamble "GC statistics" ?>
+<?!=navbar "/gc" ?>
 <?^open Gc open Buffer
    let interval = 3 let delim = ","
    let fmt s =

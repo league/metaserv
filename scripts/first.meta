@@ -1,2 +1,1 @@
-<i>Hello,</i> <? failwith "Nice try!"?>
-world.
+<i>Hello,</i> <? failwith "Nice try!"?> world.

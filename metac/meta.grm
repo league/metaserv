@@ -30,18 +30,23 @@ fun pragma (page:page) (k,v) =
     | LBRACK | RBRACK | LCURLY | RCURLY | LPAREN | RPAREN
     | LANGLE | RANGLE | SEMI | COMMA | LET | IN | EQ
     | RP                                (*  ?>    *)
-    | LP_DECL                           (* <?     *)
-    | LP_CODE_EQ                        (* <?~=   *)
-    | LP_CODE                           (* <?~    *)
+    | LP_DECL                           (* <?^    *)
+    | LP_PRAGMA                         (* <?pragma *)
+    | LP                                (* <?     *)
     | LP_EQ                             (* <?=    *)
     | LP_FMT                            (* <?"    *)
+    | LP_CODE                           (* <?~    *)
+    | LP_CODE_EQ                        (* <?~=   *)
     | LP_CODE_FMT                       (* <?~"   *)
     | LP_CODE_LET                       (* <?~let *)
-    | LP                                (* <?     *)
-    | LP_PRAGMA                         (* <?pragma *)
+    | LP_LIFT                           (* <?!    *)
+    | LP_LIFT_EQ                        (* <?!=   *)
+    | LP_LIFT_FMT                       (* <?!"   *)
+    | LP_LIFT_LET                       (* <?!let *)
 
 %nonterm start of page | page of page | text of buf list
-    | decl of buf list * bool | args of buf list | argc of buf list
+    | decl of buf list * bool | args of buf list 
+    | argc of buf list | argl of buf list
     | notcex of buf list | notce of buf list
     | notcx of buf list | notc of buf list
     | notex of buf list | note of buf list
@@ -63,12 +68,7 @@ page
        end)
   | LP_DECL CODE RP page
       (addD page (fn d=> [S CODE, S "\n", L d]))
-  | LP_CODE_EQ CODE RP page 
-      (addC page (fn c=> [S "puts (.~(", S CODE, S "));\n", L c]))
-  | LP_EQ CODE RP page
-      (addC page (fn c=> [S "puts (", S CODE, S ");\n", L c]))
-  | LP_CODE CODE RP page
-      (addC page (fn c=> [S ".~(", S CODE, S ");\n", L c]))
+
   | LP decl RP page
       (addC page (fn c=>
          let val (buf, term) = decl
@@ -77,15 +77,36 @@ page
                         else (S ";\n"::code)
           in L buf::code
          end))
-  | LP_CODE_LET note EQ any RP page 
-      (addC page (fn c=> [S "let", L note, S "= .~(",
-                          L any, S ") in\n", L c]))
+  | LP_CODE CODE RP page
+      (addC page (fn c=> [S ".~(", S CODE, S ");\n", L c]))
+  | LP_LIFT CODE RP page
+      (addC page (fn c=> [S ".~(lift(", S CODE, S "));\n", L c]))
+
+  | LP_EQ CODE RP page
+      (addC page (fn c=> [S "puts (", S CODE, S ");\n", L c]))
+  | LP_CODE_EQ CODE RP page 
+      (addC page (fn c=> [S "puts (.~(", S CODE, S "));\n", L c]))
+  | LP_LIFT_EQ CODE RP page 
+      (addC page (fn c=> [S "puts (.~(lift(", S CODE, S ")));\n", L c]))
+
+
   | LP_FMT STRING args RP page
       (addC page (fn c=> [S "Printf.kprintf puts \"", S STRING, 
                           S "\"", L args, S ";\n", L c]))
   | LP_CODE_FMT STRING argc RP page
       (addC page (fn c=> [S "Printf.kprintf puts \"", S STRING, 
                           S "\"", L argc, S ";\n", L c]))
+  | LP_LIFT_FMT STRING argl RP page
+      (addC page (fn c=> [S "Printf.kprintf puts \"", S STRING, 
+                          S "\"", L argl, S ";\n", L c]))
+
+  | LP_CODE_LET note EQ any RP page 
+      (addC page (fn c=> [S "let", L note, S "= .~(",
+                          L any, S ") in\n", L c]))
+  | LP_LIFT_LET note EQ any RP page
+      (addC page (fn c=> [S "let", L note, S "= .~(lift(",
+                          L any, S ")) in\n", L c]))
+
   | (initial)
 
 args
@@ -95,6 +116,10 @@ args
 argc
   : notc COMMA argc ([S " (.~(", L notc, S ")) ", L argc])
   | notc ([S " (.~(", L notc, S ")) "])
+
+argl
+  : notc COMMA argl ([S " (.~(lift(", L notc, S "))) ", L argl])
+  | notc ([S " (.~(lift(", L notc, S "))) "])
 
 notcex
   : CODE              ([S CODE])
