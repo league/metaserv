@@ -226,7 +226,7 @@ contains gems like this:\label{php-gem}
         "\"); ?>\n" ?>
 \end{verbatim}
 where the \texttt{serialize} library function occurs in stage one and
-the \texttt{unserialize} in stage two.  Notice that the \verb+$+
+the \texttt{unserialize} in stage two.  Notice that the \verb+$+ %$
 preceding the first occurrence of \verb+list+ is quoted, but the
 second occurrence is not.  The \texttt{addcslashes} function is needed
 in case the serialized representation contains special characters
@@ -905,6 +905,14 @@ possible to implement staged programming in Scheme using
 this would lead to a similar capability, save for the difference
 between static and dynamic checking of the generated code.
 
+\citet{takebe02caching} developed a partial evaluation technique for
+PHP.  Their tool, PHP-Mix, reads standard PHP source code and performs
+binding time analysis.  Then, it generates a semi-static script as
+output.  It understands a significant subset of the PHP function
+library, including the database connectivity.  Unfortunately, some
+properties of PHP---such as the lack of variable declarations and the
+single global scope---cause the analysis to be overly conservative,
+so it does not always achieve the optimizations we desire.
 
 \citet{queinnec00influence} and \citet{hughes00generalising} observed
 that multi-page web services could be implemented more naturally using
@@ -1019,6 +1027,11 @@ read and write generated code to a file.
 
 Sincere thanks to the anonymous reviewers, for many helpful and
 enlightening recommendations on both the work and the presentation.
+%%
+Thanks to my M.S. student, Kiichi Takeuchi, for exploring some
+applications of these ideas, and for helping me understand the work of
+\citet{takebe02caching} (written in Japanese).
+%%
 Thanks to Walid Taha for organizing the \MOC workshop, and to the rest
 of the \MOC team for their development efforts.
 
