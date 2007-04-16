@@ -1,5 +1,7 @@
 open Unix
 
+let bufsize = 4096
+
 module TMap = Map.Make
     (struct 
       type t = Thread.t

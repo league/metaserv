@@ -1,5 +1,6 @@
 include ../Makefile.rules
-objects=chunked timeStamp stringMap status request logFile server fileHandler 
+objects=chunked timeStamp stringMap status request \
+	logFile server fileHandler codeHandler
 
 default: server.cma
 

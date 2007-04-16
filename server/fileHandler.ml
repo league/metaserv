@@ -54,7 +54,7 @@ let copy o' (path, st) =
   flush o';
   let o = descr_of_out_channel o' in
   let i = openfile path [O_RDONLY] 0 in
-  let size = min st.st_size 8192 in
+  let size = min st.st_size Server.bufsize in
   let buf = String.create size in
   while
     match read i buf 0 size with

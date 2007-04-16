@@ -2,12 +2,14 @@ let code_map =
   List.fold_right 
     (fun(uri,scr) map->StringMap.add uri scr map) [
 
+(*
 "/browse",   .! Dir.page ".";
 "/server/",  .! Dir.page "server";
 "/scripts/", .! Dir.page "scripts";
 "/paper/",   .! Dir.page "paper";
 "/metac/",   .! Dir.page "metac";
 "/images/",  .! Dir.page "images";
+ *)
 
 "/power7",   .! Power.page (Num.Int 7);
 "/power17",  .! Power.page (Num.Int 17);
@@ -28,5 +30,6 @@ let code_map =
 #use "server/codeHandler.ml";;       
 Sys.set_signal Sys.sigpipe Sys.Signal_ignore;;
 Sys.catch_break true;;
-Server.start [CodeHandler.run; CodeHandler.redirect;
+Server.start [CodeHandler.run code_map; 
+              CodeHandler.redirect code_map;
               FileHandler.root "."];;

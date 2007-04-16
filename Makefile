@@ -1,5 +1,6 @@
+include Makefile.rules
 subdirs=server metac scripts paper
-mlflags=-I server
+mlflags+=-I server
 
 default:
 	for d in $(subdirs); do $(MAKE) -C $$d default; done
@@ -22,9 +23,8 @@ reallyclean: clean
 
 method=camlcode
 static-bench:
-	for n in 01 02 04; do \
+	for n in $(sizes); do \
 	  bench/static-overhead $(method) $$n 2>&1 \
 	    | tee bench/static.$(method).$$n; \
 	done
 
-include Makefile.rules

@@ -5,14 +5,22 @@
 #   camlfile
 #   camlcode
 
-set -m
-make run &
+case $1 in
+    caml*)
+        set -m
+        make -C.. run &
+        sleep 4
+        ;;
+esac
 
 echo '========================================' $1-$2
 
 case $1 in
     apache)
         url=http://localhost/static$2.meta
+        ;;
+    php)
+        url=http://localhost/static$2.php
         ;;
     camlfile)
         url=http://localhost:8000/scripts/static$2.meta
@@ -21,8 +29,11 @@ case $1 in
         url=http://localhost:8000/static$2
         ;;
 esac
-sleep 4
 
 ab -k -t 30 -c 8 $url 
 
-kill -INT %%
+case $1 in
+    caml*)
+        kill -INT %%
+        ;;
+esac

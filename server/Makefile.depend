@@ -19,3 +19,8 @@ fileHandler.cmo: logFile.cmi request.cmi server.cmi status.cmi timeStamp.cmi \
 fileHandler.cmx: logFile.cmx request.cmx server.cmx status.cmx timeStamp.cmx \
     fileHandler.cmi 
 fileHandler.cmi: server.cmi 
+codeHandler.cmo: chunked.cmi request.cmi server.cmi status.cmi stringMap.cmi \
+    timeStamp.cmi codeHandler.cmi 
+codeHandler.cmx: chunked.cmx request.cmx server.cmx status.cmx stringMap.cmx \
+    timeStamp.cmx codeHandler.cmi 
+codeHandler.cmi: request.cmi server.cmi stringMap.cmi 

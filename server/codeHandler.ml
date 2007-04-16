@@ -1,23 +1,16 @@
-
-module type CodeHandler =
-  sig
-    val run : Server.handler
-    val redirect : Server.handler
-  end
-
-module CodeHandler : CodeHandler = struct
+  type code = Request.req -> (string -> unit) -> unit
 
   let chunked_response f o =
     output_string o "Transfer-encoding: chunked\r\n\r\n";
     flush o;
-    let ch = Chunked.create o 512 in
+    let ch = Chunked.channel o Server.bufsize in
     f (Chunked.puts ch);
     Chunked.finish ch;
     (* footers go here *)
     output_string o "\r\n"
 
   let buffered_response f o =
-    let buf = Buffer.create 512 in
+    let buf = Buffer.create Server.bufsize in
     f (Buffer.add_string buf);
     Printf.fprintf o "Content-length: %d\r\n" (Buffer.length buf);
     (* headers go here *)
@@ -32,10 +25,10 @@ module CodeHandler : CodeHandler = struct
 
 (* NEED A WAY FOR script function to send additional headers *)
 (* would be nice to support HEAD *)
-  let run req o =
+  let run map req o =
    (match Request.meth req with
       Request.GET ->
-        let code = StringMap.find (Request.uri req) code_map in
+        let code = StringMap.find (Request.uri req) map in
         let fn puts = 
           try 
             (*Mutex.lock mutex;
@@ -63,11 +56,11 @@ module CodeHandler : CodeHandler = struct
    "/dir" --> "/dir/" 
  *)
 
-  let redirect req o =
+  let redirect map req o =
     (match Request.meth req with
       Request.GET ->
         let uri' = Request.uri req ^ "/" in
-        let _ = StringMap.find uri' code_map in
+        let _ = StringMap.find uri' map in
         let url = "http://" in
         let url = url^Unix.gethostname() in
         let url = 
@@ -92,4 +85,3 @@ module CodeHandler : CodeHandler = struct
         Status.Moved_permanently
      | _ -> raise Server.Not_implemented)
                     
-end
