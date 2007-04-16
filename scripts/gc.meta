@@ -27,7 +27,7 @@
  <dd>Number of words allocated in the minor heap that
    survived a minor collection and were moved to the 
    major heap since the program was started.</dd>
-(* etc. *)
+
 <dt>major words: <?=f st.major_words ?></dt>
 <dd>Number of words allocated in the major heap, including
    the promoted words, since the program was started.</dd>

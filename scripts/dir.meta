@@ -8,7 +8,6 @@
        None -> default_re | Some r -> (r, Str.regexp r) ?>
 <?~let list = list_files d .<rc>. ?>
 <? let list = sort_by (arg "ord") list ?>
-  (* Generate the <option> tages, with one selected *)
 <?^let rec ord_options puts ord opts = 
      match opts with [] -> .<()>.
      | (tag,text)::opts ->

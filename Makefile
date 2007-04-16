@@ -40,11 +40,14 @@ run: default $(addprefix bench/d., $(dir_sizes))
 interact: default
 	$(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
 
-clean:
+mostlyclean:
 	find . -name '*~' | xargs $(RM)
-	$(RM) server.log metac/metac.*-* server/*.cm?
-	$(RM) scripts/run $(ml_files)
+	$(RM) server.log 
 	$(RM) -r metac/$(CM)
+
+clean: mostlyclean
+	$(RM) metac/metac.*-* server/*.cm?
+	$(RM) scripts/run $(ml_files)
 
 reallyclean: clean
 	$(RM) metac/meta.grm.* metac/meta.lex.*
