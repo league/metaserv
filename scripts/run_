@@ -15,6 +15,14 @@ let page_map = StringMap.add "/hofpower1023" (PowHof.page (Num.Int 1023)) page_m
 let page_map = StringMap.add "/hofpower2047" (PowHof.page (Num.Int 2047)) page_map;;
 let page_map = StringMap.add "/hofpower4095" (PowHof.page (Num.Int 4095)) page_map;;
 let page_map = StringMap.add "/hofpower8191" (PowHof.page (Num.Int 8191)) page_map;;
+let page_map = StringMap.add "/hofpowerb17" (PowHof2.page (Num.Int 17)) page_map;;
+let page_map = StringMap.add "/hofpowerb127" (PowHof2.page (Num.Int 127)) page_map;;
+let page_map = StringMap.add "/hofpowerb255" (PowHof2.page (Num.Int 255)) page_map;;
+let page_map = StringMap.add "/hofpowerb511" (PowHof2.page (Num.Int 511)) page_map;;
+let page_map = StringMap.add "/hofpowerb1023" (PowHof2.page (Num.Int 1023)) page_map;;
+let page_map = StringMap.add "/hofpowerb2047" (PowHof2.page (Num.Int 2047)) page_map;;
+let page_map = StringMap.add "/hofpowerb4095" (PowHof2.page (Num.Int 4095)) page_map;;
+let page_map = StringMap.add "/hofpowerb8191" (PowHof2.page (Num.Int 8191)) page_map;;
 Sys.set_signal Sys.sigpipe Sys.Signal_ignore;;
 Sys.catch_break true;;
 Printf.printf "Ready...\n%!";

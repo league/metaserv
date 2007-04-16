@@ -15,17 +15,19 @@ open Num (* for arbitrary-precision arithmetic *)
 let one = Int 1
 let two = Int 2
 
-let rec power n k =
- (Printf.printf "hof power %s\n" (string_of_num n);
-  if is_zero n then
-      k one
+(* here is one without continuations, as suggested by reviewer *)
+let rec power n =
+ (Printf.printf "hof power B %s\n" (string_of_num n);
+  if is_zero n then fun x -> Int 1
   else if is_zero (mod_num n two) then
-      power (n//two) (fun r -> k (square r))
+      let pow_ndiv2 = power (n//two) in
+      fun x -> square (pow_ndiv2 x)
   else 
-      power (n -/ one) (fun r -> fun x -> k (x */ r) x))
+      let pow_nsub1 = power (n -/ one) in
+      fun x -> x */ (pow_nsub1 x))
 
 let page  y  = 
-  let pre_gen = power y (fun r _ -> r) in
+  let pre_gen = power y in
 (fun req puts ->
 let arg = Request.arg req in
 let y' = (( string_of_num y )) in

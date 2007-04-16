@@ -1,5 +1,5 @@
 <?^open Unix open Printf
-    let st = stat "server.log" 
+    let st = stat "robots.txt" 
     let sz = float_of_int st.st_size 
     let fmt d u = lift(sprintf "%.1f%s" (sz/.d) u) ?>
 <?match arg "unit" with

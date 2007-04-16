@@ -77,7 +77,6 @@
 
 \section{Motivation}
 \label{sec:intro}
-
 Modern dynamic web sites support many features for user collaboration
 and personalization.  To provide such services, web sites contain
 custom computer programs, often written in one of a family of
@@ -101,28 +100,24 @@ second.''~\cite{turner03slashdot}~ Although some ISPs have
 bandwidth limitations, Slashdot creator Rob Malda says most
 sites that fail suffer from poor planning and architecture:
 \begin{quote}
-  The problem is, if you have any sort of complicated code
-  on your page, that's what kills people. I generally think
-  that sites are not dying because they fill their pipe, but
-  because they have poorly written code.
-  
-  As a general rule, anybody who has a pretty good
-  understanding of web design, they've done a good job of
-  learning what information to cache. What information needs
-  to be pregenerated. So when you're actually loading a
+  Anybody who has a pretty good
+  understanding of web design [has] done a good job of
+  learning what information to cache [and] what needs
+  to be pre-generated.  So when you're actually loading a
   page, even if it's a complicated page that looks dynamic
   and custom, on the back end of that, what they're really
   doing is putting together a bunch of puzzle pieces that
-  have been pregenerated, and making the simplest, quickest
+  have been pre-generated, and making the simplest, quickest
   decisions they possibly can.~\cite{turner03slashdot}
 \end{quote}
 
 Malda's observation points (informally) to the idea of \emph{staging}
 the computation performed by a web service.  Indeed, web publishing is
-an application area that is naturally staged:\footnote{Nevertheless,
-  it seems the literature on meta-programming has not yet acknowledged
+an application area that is naturally staged:\footnote{The literature
+on meta-programming has yet to acknowledge
   web services~\cite{w3c-wsdl} as a potential application area,
-  although \citet{sheard01accomp} does mention \emph{mobile code.}} %
+  although \citet{sheard01accomp} mentions \emph{mobile code.}
+  Analysis of other related work is in section~\ref{sec:related}.} %
 \begin{enumerate}
 \item Content (text, images, programs, etc.) created
   off-line is uploaded to the server---the \emph{publish}
@@ -132,22 +127,27 @@ an application area that is naturally staged:\footnote{Nevertheless,
   transferred from server to client---the \emph{serve}
   stage; and finally
   
-\item The content is rendered within the user's
-  browser---the \emph{display} stage.
+\item The content is rendered within the user's browser---the
+  \emph{display} stage.\footnote{Increasingly in modern web
+    applications, the rendered content is
+    \emph{interactive}---responsive to user input without a round-trip
+    to the server.}
 \end{enumerate}
-At \emph{each} stage there is an opportunity for computation
-to take place.  Consider the example of a conference
-calendar, such as the one illustrated in
-figure~\ref{fig:confcal}.  After specifying your areas of
-interest (perhaps using the ACM classifications), the server
-delivers a table of matching conferences, with dates,
-locations, deadlines, and links to conference web sites.
-Events remain in the table until a few weeks after they
-occur, but deadlines that have passed are marked in red.
-You may click on any column header to change the sort order.
-The next time you visit, the server remembers your
-preferences.  Perhaps it even sends you email to remind you
-of upcoming submission and registration deadlines.
+At \emph{each} stage there is an opportunity for computation to take
+place.\footnote{\citet{normark02programmatic} recognized these three
+stages as binding times, calling them 
+\emph{generated, calculated,} and \emph{dynamic} documents,
+respectively.}
+Consider the example of a conference calendar, such as the one
+illustrated in figure~\ref{fig:confcal}.  After specifying your areas
+of interest (perhaps using the ACM classifications), the server
+delivers a table of matching conferences, with dates, locations,
+deadlines, and links to conference web sites.  Events remain in the
+table until a few weeks after they occur, but deadlines that have
+passed are marked in red.  You may click on any column header to
+change the sort order.  The next time you visit, the server remembers
+your preferences.  Perhaps it even sends you email to remind you of
+upcoming submission and registration deadlines.
 
 \screenshot{confcal}{A simple conference calendar web service.}
 %, implemented as a
@@ -156,7 +156,7 @@ of upcoming submission and registration deadlines.
 
 Now, how might this conference service be staged?  Can
 anything be computed off-line (at the \emph{publish} stage)?
-Yes!  Since this page is probably part of a much larger site
+Yes: since this page is probably part of a much larger site
 (whose structure does not change every day), the menus and
 other navigation aids can be laid out in advance.  We will
 not know which conferences to display until the user
@@ -192,9 +192,9 @@ these also count as publish-stage tools.
 
 The \emph{serve} stage is well-served by the ``server page''
 languages, including
-JSP,\footnote{\url{http://java.sun.com/products/jsp/}}
-ASP,\footnote{\url{http://www.asp.net/}} and
-PHP.\footnote{\url{http://www.php.net/}} The Common Gateway Interface
+JSP,
+ASP, and
+PHP.  The Common Gateway Interface
 (CGI)\footnote{\url{http://www.w3.org/CGI/}} addresses the
 \emph{serve} stage, as do the embedded interpreters (such as
 \texttt{mod\_perl} and \texttt{mod\_python} for Apache) that exist to
@@ -202,7 +202,7 @@ ameliorate some of the overhead of CGI.
 
 There is, relatively, a paucity of languages that operate client-side
 (\emph{display} stage), probably due to the difficulty of securing an
-installed base of interpreters.  JavaScript and Java applets are
+installed base of interpreters.  JavaScript, Java, and Flash applets are
 notable exceptions.  
 
 Imagine implementing the conference calendar, as conceived
@@ -213,7 +213,7 @@ programmer must manage all the quoting and persistence
 issues by hand.
 
 Strictly speaking, these languages are not exclusively confined to the
-stages that I have indicated: Javascript can be run client-side, PHP
+stages that I have indicated: Javascript can be run server-side, PHP
 can be run off-line, and so on.  Nevertheless, migrating code between
 stages is hard, and the need for quoting and persistence are
 practically show-stoppers.  For comparison purposes (further described
@@ -273,13 +273,20 @@ containing the provided message.  If a code block raises an exception,
 the message is sent to the client's browser in bold-face, and the rest
 of the page is aborted.
 
+In this example and throughout this paper, a {\BGfont sans-serif}
+font is used for embedded \MOC code, with {\KWfont bold sans} reserved
+for keywords and code delimiters.  A \texttt{typewriter} font is used
+for \MOC character strings.  The regular serif font is used for plain
+text and HTML within the server page, and for comments within the \MOC
+code blocks.
+
 A very common use of code blocks is to print out (i.e., send to the
 browser) the result of evaluating some expression.  The syntax
 \cd{\Mquote= e\Munquote} is designated for this task; \cd{e} must have
 type \cd{string}.  Alternatively, messages may be formatted with
-\cd{printf} by placing the format string immediately after the code
+\cd{sprintf} by placing the format string immediately after the code
 delimiter.\footnote{In a departure from the standard OCaml syntax for
-  \cd{printf}, the arguments are comma-delimited.  This way, fewer
+  \cd{sprintf}, the arguments are comma-delimited.  This way, fewer
   parentheses are required when using the escape or lift operators on
   the arguments.}
 %%
@@ -309,15 +316,15 @@ we'll see in the rest of this section.
 \subsection{Review of staging annotations}
 
 \MOC augments OCaml with just three annotations, to indicate how
-programs are to be staged.  Brackets \cd{\Mbegincode like
-  these\Mendcode} construct future-stage computation.  The code within
-is not executed \emph{now,} but just returned, as a code value that can be
-run later.  
+programs are to be staged.  Brackets \cd{\Mbegincode e\Mendcode}
+construct future-stage computation.  The code within is not executed
+in the current stage of computation, but just returned as a code value
+that can be run later.
 
 Within brackets, the splice or escape operator \cd{\Msplice e} may
-appear.  It interrupts the code construction to execute the expression
+appear.  It interrupts the code construction to evaluate the expression
 \cd{e} (in the current stage) and splice its result into the
-future-stage computation.  Thus, \cd{e} is required to return code of
+future-stage computation.  Thus, \cd{e} is required to evaluate to code of
 the proper type.
 
 To compute and splice in a regular (non-code) value, we define a
@@ -357,7 +364,7 @@ contained there are executed when the page is published.  The
 constructed code begins on line~5.
 
 The \cd{a b c} represent publish-stage arguments (the names are
-specified in the \cd{pragma}), whereas \cd{req} and \cd{puts} are
+specified with \cd{pragma args}), whereas \cd{req} and \cd{puts} are
 (fixed) serve-stage arguments.  \cd{req} encapsulates the HTTP request
 details, including the headers and query arguments.  \cd{puts} is a
 function, provided by the server, to transmit text across the network
@@ -365,38 +372,44 @@ to the user's browser.
 %%
 The library function \cd{Request.arg} of the type \cd{request\to
   string\to string option} looks up the string value of the request
-parameter with a given name.  Since \cd{req} and \cd{puts} are
+parameter with a given name.  The \cd{option} type constructor permits
+the function to return \cd{None} if there is no matching parameter in
+the HTTP request.  On line 6, \cd{arg} is defined as a short-cut for
+retrieving a parameter by name.  Since \cd{req} and \cd{puts} are
 serve-stage arguments, it is incorrect to use them in the
 \emph{publish} (first) stage, and indeed the \MOC type system prevents
-this.
-
-A few finer points to note: the translator discards newlines that
-immediately follow code blocks (otherwise,
-figure~\ref{fig:trans.ml} would be dotted with %
-\cd{puts}~\verb+"\n"+ statements).  It automatically appends a
-semi-colon or the {\KWfont in} keyword to code blocks, as required
-(see, for example, lines 7, 11, and 12 in figure~\ref{fig:trans.ml}.)
+this.  These, along with the \cd{lift} function defined near the top,
+are essentially primitives from the point of view of the server page
+code.%%
 %%
-Finally, because the translator partially parses the OCaml code
-blocks, it is not confused by code delimiters within strings and
-comments, nor by other uses of \la{} and \ra{} as operators.
+\footnote{Here are a few finer points about the translator: it discards
+newlines that immediately follow code blocks (otherwise,
+figure~\ref{fig:trans.ml} would be dotted with
+\cd{puts}~\texttt{"\char"5C{}n"} 
+statements).  It automatically appends a semi-colon or the {\KWfont
+in} keyword to code blocks, as required (see, for example, lines 7,
+11, and 12 in figure~\ref{fig:trans.ml}.)  Finally, because the
+translator partially parses the OCaml code blocks, it is not confused
+by code delimiters within strings and comments, nor by other uses of
+\la{} and \ra{} as operators.}
 
 
 \subsection{Staged code blocks}
 Now that we understand how the server page is assembled into a staged
 program, the effects of adding \MOC staging operators to our pages
 should be predictable.  Below is another example using \cd{stat}, this
-time to display the size of the server log file.
+time to display the size of some text file on the server.
 With the serve-stage argument \texttt{unit}, we can specify whether
 the size should be expressed in bytes (the default), kilobytes, etc.
 \lgrindfile{size.meta}%
 
-To stage this, the \cd{stat} and \cd{float\_of\_int} calls could be
-lifted into the declaration block, as with the permissions example.
-Furthermore, we may also use \cd{lift} and the splice operator to
-perform the divisions in advance, even though they are underneath the
-{\KWfont match} (which cannot happen until the serve stage):
-\lgrindfile{size2.meta}%
+If this text file does not change frequently (and reporting 
+outdated information is no problem), the \cd{stat} and
+\cd{float\_of\_int} calls could be lifted into the declaration block,
+as with the permissions example.  Furthermore, we may also use
+\cd{lift} and the splice operator to perform the divisions in advance,
+even though they are underneath the {\KWfont match} (which cannot
+happen until the serve stage): \lgrindfile{size2.meta}%
 
 Still, the \cd{printf} conversion is performed at serve time, so maybe
 it is best to pre-generate that as well:%
@@ -468,8 +481,11 @@ these blocks, we use the \Mbang{} character:
 \\
 \end{tabular}
 
-We will see examples of most of these blocks in section~\ref{sec:eg}
-and appendix~\ref{sec:dir.meta}.
+In these cases, the expressions should not have code types: \cd{a}
+simply has type \cd{unit}, \cd{b} has type string, etc.  This is the
+only difference between the \cd{\Mtilde} and \cd{!} variants; both are
+evaluated in the first stage.  We will see examples of most of these
+blocks in section~\ref{sec:eg} and appendix~\ref{sec:dir.meta}.
 
 \subsection{Publish-stage arguments}
 
@@ -477,13 +493,14 @@ and appendix~\ref{sec:dir.meta}.
 the identifiers \cd{a b c} in figures~\ref{fig:trans.meta}
 and~\ref{fig:trans.ml}.  The programmer specifies the pattern to be
 used with a \cd{\Mquote{}pragma args ...\Munquote} declaration, which
-may appear anywhere in the code.
+may appear anywhere in the code.  Any identifiers following \cd{args}
+in the \cd{pragma} declaration will become publish-stage parameters.
 
-With publish-stage arguments, the page may be instantiated in
+With publish-stage parameters, the page may be instantiated in
 countless ways.  Continuing the count-down example, we could map the
-URI \id{/longcount} to a code block generated with an actual argument
-of 99, while \id{/shortcount} refers to code with the actual
-argument 9.  Both are generated from the same server page.
+URI \id{/longcount} to a code block generated with an argument of 99,
+while \id{/shortcount} refers to code with the argument 9.  Both are
+generated from the same server page.
 
 \lgrindfile{count2.meta}
 
@@ -494,8 +511,7 @@ implementation detail (see section~\ref{sec:impl}).
 \label{sec:eg}
 
 To explore the expressiveness of this design, we now look at a series
-of web services, organized to comprise a small web site.\footnote{A
-  demo is available at \url{http://comsci.liu.edu/metaserv/}} To give
+of web services, organized to comprise a small web site.  To give
 the services a similar look, we developed a site-wide style sheet, and
 an OCaml function to generate a navigation bar from a hierarchical
 list of page titles and links.  
@@ -544,8 +560,8 @@ output before the error message appears.
 
 In section~\ref{sec:perf}, we will measure the impact of staging on
 the scalability of this application.  To derive the un-staged version
-for comparison, we simply convert \cd{\Mquote{\Mtilde}} and
-\cd{\Mquote{!}} blocks into plain \cd{\Mquote{}} and remove all other
+for comparison, we simply replace \cd{\Mquote{\Mtilde}} and
+\cd{\Mquote{!}} blocks with plain \cd{\Mquote{}} and remove all other
 brackets and escapes from the code in figure~\ref{fig:power.meta}.
 
 \subsection{Directory browsing}
@@ -555,10 +571,10 @@ Now we consider a more substantial example.
 Many web servers can be configured to permit clients to browse
 directories.  The web server generates, on the fly, an HTML page
 containing the names and attributes of (and hyperlinks to) all
-the files in the directory.  In Apache, the
+the files in whatever directory is specified by the URL.  In Apache, the
 \texttt{mod\_autoindex} module provides this feature.
 %%
-ViewCVS\footnote{\url{http://viewcvs.sourceforge.net/}} is a more
+ViewCVS is a more
 complex example of the same idea; it allows remote users to browse a
 CVS repository with a standard web browser.
 
@@ -668,41 +684,48 @@ server.  Two primary handlers are provided: \cd{FileHandler} and
 \cd{CodeHandler}.
 
 The \cd{FileHandler} takes a file system path as a parameter, and then
-interprets URIs as file names relative to that path.  If such a file
-exists, it sends it verbatim to the client.  If not, it passes
+interprets each URI as a file name relative to that path.  If such a
+file exists, it sends it verbatim to the client.  If not, it passes
 the responsibility on to the next handler in the chain.
 
 The \cd{CodeHandler} is provided with a dictionary to map URIs to code
 values.  It looks up the URI in the dictionary, and if a match is
 found it invokes that code.  For now, the map is hard-coded at build
 time and the code values are already in memory when the server starts
-accepting requests.  This is because \MOC is currently not capable of
-reading and writing code values to a file.
+accepting requests.  This is because \MOC does not currently permit
+programs to read and write code values to a file.
 
-Here are the types of the page code and the map, along with signatures
-for the \cd{CodeHandler} (and two variants):
+Here are the types of the page code and the map, along with the
+signature for the \cd{CodeHandler}:
 
 \lgrindfile{codeHndl.mli}
 %%
 \cd{page} is the type of the code that is constructed by each server
-page; recall that the page takes two serve-time arguments: one
+page; recall that the page takes two serve-time parameters: one
 encapsulating the HTTP request, the other is the \cd{puts} function
-for sending text back to the client.
+for sending text back to the client.  
 
-Values of type \cd{map} tell the server which pages are mapped to
-which URIs.  Ideally, it would be defined as \cd{page code
-  StringMap.t}.  This is not currently possible: the \cd{page code}
-needs to be run, but in the current implementation of \MOC, the
-\Mrun{} operator cannot be used from within functions.  Passing around
-code values themselves has limited utility because they must remain
-polymorphic to run them, and OCaml does not yet support rank-2
-polymorphism.  (Although recent work by \citet{garrigue99semi} leads
-in that direction.)  Our work-around involves mapping the URI instead
-to a pair containing a function (defined at the top level) to generate
-the page (by running the first stage and then using the \Mrun{}
-operator on the generated code) and a ref cell where the resulting
+Data structures of type \cd{map} tell the server which pages are
+mapped to which URIs.  The range of the map is a pair: the first
+component (of type \cd{unit\to page}) is a function that will re-run
+stage one computation (using the \Mrun{} operator internally); the
+second component (of type \cd{page ref}) is a cell where the latest
 page is cached.
 
+The \cd{unit\to page} formulation is a work-around for what might
+otherwise be expressed as \cd{page code}, and run from within the
+\cd{CodeHandler}.  Unfortunately, code values in MetaOCaml must remain
+polymorphic to run them; the type is actually \cd{('a, page) code},
+for all \cd{'a}.  This is traditionally problematic in ML: we can
+define a polymorphic data structure, but not a data structure
+containing polymorphic values.  The work-around we used captures the
+polymorphic code value in a closure, which is then added to the map.
+Another possibility is to use the limited form of explicit
+polymorphism supported in OCaml, with the syntax \cd{\{f : 'a. ('a,
+page) code\}}.\footnote{Thanks to an anonymous reviewer for pointing
+this out.}  To use code values more directly, we would need rank-2
+polymorphism; work by \citet{garrigue99semi} is headed in that
+direction.
 
 
 \section{Performance}
@@ -737,7 +760,7 @@ will rely on byte code.  The native code results we are able to obtain
 at this time suggest how much improvement we can expect once native
 code is an option.
 
-For the ``OCaml CodeHandler'' series, the same set of files were
+For the ``\MOC CodeHandler'' series, the same set of files were
 treated as \MOC Server Pages, and thus translated (in advance) into
 one big \texttt{puts} statement, to be executed (as byte code) by the
 \texttt{CodeHandler} module.  The only reason the code beats the (byte
@@ -788,8 +811,8 @@ functions.}
 
 At the suggestion of an anonymous reviewer, we also tried staging
 using higher-order functions in OCaml instead of the code splicing
-features of \MOC.  The relavant fragment of code is shown in
-figure~\ref{fig:powerhof.ml}.  Using continuation-passing style, it
+features of \MOC.  The relevant fragment of code is shown in
+figure~\ref{fig:powerhof.ml}.  It
 recursively builds up a closure that represents the computation
 required to compute any number to the power \cd n.
 
@@ -820,16 +843,16 @@ which is then run by the server.  With PHP we must, as noted in
 section~\ref{sec:intro}, manage the quoting and persistence 
 by hand.  (This program is the source of the horrible
 \texttt{serialize}/\texttt{unserialize} code shown on
-page~\pageref{php-gem}. 
+page~\pageref{php-gem}.)
 
 Directory browsing was the most realistic of the examples, and the
 benefit of staging is crystal clear.  In browsing a directory of 64
 files, the unstaged programs barely answered 18 requests per second.
-They would certainly succumb to the Slashdot effect!  (And compilation
-to native code made essentially no difference.)
+They would certainly succumb to the Slashdot effect---and compilation
+to native code made essentially no difference.
 
 This is exactly the kind of page where the real work needs to be done
-in advance.  But that doesn't mean it needs to be a completely static
+in advance.  But that does not mean it needs to be a completely static
 page, either.  By carefully staging the computation, we gathered the
 file information in advance, yet still filtered and sorted the results
 on demand.  The staged \MOC directory browser answered more than 550
@@ -868,6 +891,41 @@ explicit support for \emph{staging} the computation.  We inherited the
 staging annotations of \MOC~\cite{calcagno03meta} and designed several
 new kinds of code blocks based on them.
 
+There is much related work on using various features of modern
+programming languages to implement sophisticated web services.
+\citet{normark02programmatic} proposed writing web pages in Scheme
+using the Lisp Abstracted Markup Language (LAML), which essentially
+represents HTML documents as S-expressions.  He distinguished three
+different binding times, when the Scheme program could be evaluated:
+off-line, page access time, or browse time (client-side).  These
+correspond precisely to the three stages we identified in section 1,
+but his programs did not \emph{transcend} different stages.  It is
+possible to implement staged programming in Scheme using
+\cd{quasiquote}, \cd{unquote}, and \cd{eval}~\cite{davies01modal};
+this would lead to a similar capability, save for the difference
+between static and dynamic checking of the generated code.
+
+
+\citet{queinnec00influence} and \citet{hughes00generalising} observed
+that multi-page web services could be implemented more naturally using
+continuations and \cd{call/cc} (essentially, by treating the server
+and user as coroutines).  This way, we can treat the entire service as
+one program---that suspends itself while waiting for user
+input---instead of developing each page as a separate program.  This
+is a valuable technique, and appears to be orthogonal to staging;
+although it would be worth implementing both together to determine if
+there are unforeseen interactions.
+
+\citet{graunke01programming,graunke03modeling} took up this idea and
+mixed it with other language features: first-class modules, preemptive
+threads, and \emph{custodians,} for managing resource consumption.
+The result is a server that achieves lower overhead for dynamic
+services compared to Apache CGI (although the overhead of CGI is
+avoided by most modern dynamic services, by embedding interpreters for
+JSP, PHP, or similar in the server).  \citet{matthews04automatically}
+compile such direct-style interactive programs into CGI-style scripts.
+
+
 Unlike more ad-hoc staging methods, \MOC server pages guarantee the
 type safety for generated code up front.  We do not, however, make any
 guarantees about the validity of the generated HTML.
@@ -878,6 +936,7 @@ and Ohl\footnote{XHTML module.
 leverage ML-like type systems to validate (X)HTML generators.
 Integrating their ideas into \MOC server pages may permit validation
 of the generated document as well.
+
 
 Our server page language is defined by translation into \MOC.
 Unfortunately, this means that error messages refer to the translated
@@ -911,15 +970,7 @@ separate tool would translate the server page source directly to
 byte-code, stored in an image on disk.  Then the server would map URIs
 to these byte-code files, loading and executing them on demand.
 Whenever we want to re-run the publish stage, we could do so
-independently of the server.  Two limitations of the \MOC
-implementation itself appear to stand in the way of this ideal.
-First, code values cannot at present be written to or read from files.
-Second, code values remain polymorphic until they are \emph{run} with
-the \Mrun{} operator.  Although they may be passed to functions and
-stored in data structures, code values \emph{cannot be run} from
-within functions.  That is, the \Mrun{} operator can only be used at
-the top level (until OCaml supports rank-2 polymorphism), which
-severely restricts the kinds of multi-stage programs one can write.
+independently of the server.  
 
 Another interesting avenue is to incorporate work on
 \emph{offshoring}~\cite{eckhardt04offshoring}.  An alternative
@@ -927,7 +978,7 @@ Another interesting avenue is to incorporate work on
 languages for improved performance.  In the domain of web services, it
 is conceivable that a \MOC server page could then generate (via
 offshoring) a specialized server page in a more mainstream language,
-such as PHP or JSP.
+such as PHP, JSP, or---for client-side computation---JavaScript.
 
 More substantial applications are needed to demonstrate both the
 performance gains and the expressiveness of this approach.  A web
@@ -966,14 +1017,13 @@ read and write generated code to a file.
 
 \section*{Acknowledgments}
 
-Many thanks to the anonymous reviewers for the \MOC workshop, and for
-this article, for many helpful and enlightening recommendations on
-both the work and the presentation.  Thanks to Walid Taha for
-organizing the workshop, and to the rest of the \MOC team for their
-development efforts.
+Sincere thanks to the anonymous reviewers, for many helpful and
+enlightening recommendations on both the work and the presentation.
+Thanks to Walid Taha for organizing the \MOC workshop, and to the rest
+of the \MOC team for their development efforts.
 
 \bibliographystyle{abbrvnat}
-\bibliography{refs,../../cal}
+\bibliography{refs,../../bib/library}
 \appendix
 %\twocolumn
 \section{The directory browser}

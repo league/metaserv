@@ -42,7 +42,8 @@ power_cases  = 17 127 255 511 1023 2047 4095 8191
 ###################################################################
 ###  Top-level rules
 
-default: server/server.cma server/nativeserver scripts/run
+default: server/server.cma  scripts/run
+# server/nativeserver
 
 LIBS = unix str nums threads
 OCAMLCMD = $(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS)) server.cma
@@ -195,7 +196,7 @@ include Makefile.depend
 
 server_modules := chunked timeStamp stringMap stringSet status request \
 		  logFile server fileHandler codeHandler navBar navspec \
-		  dirHof dirUn powHof powUnstaged hofMap
+		  dirHof dirUn powHof powHof2 powUnstaged hofMap
 server_modules := $(addprefix server/, $(server_modules))
 server_objects := $(addsuffix .cmo, $(server_modules))
 server_sources := $(addsuffix .ml, $(server_modules))

@@ -1,4 +1,4 @@
-<?^open Unix ?>  <?let st = stat "server.log" in 
+<?^open Unix ?>  <?let st = stat "robots.txt" in 
     let sz = float_of_int st.st_size in
     let (amt, unit) = match arg "unit" with
           | Some "M" -> (sz /. 1048576., "M")

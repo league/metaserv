@@ -16,16 +16,16 @@
 <?let (re,rc) = match arg "re" with 
           None -> default_re | Some r -> (r, Str.regexp r) ?>
 <?~let list = list_files d .<rc>. ?>
-<?(* The above call to list_files occurs in the first stage, but it
+<?(* The above call to `list_files' occurs in the first stage, but it
    * produces code to be executed in the second stage. The first stage
    * stats all the files and computes MD5 sums. The next stage filters
-   * according to the regular expression, passed to list_files as
-   * code. The function list_files appears later in this script.
+   * according to the regular expression, passed to `list_files' as
+   * code. The function `list_files' appears later in this script.
    *)?>
 <?let ord = match arg "ord" with 
           None -> "name" (* default *) | Some o -> o in
   let list = sort_by ord list in ?>
-<?(* Sorting occurs entirely in the second stage. The function sort_by
+<?(* Sorting occurs entirely in the second stage. The function `sort_by'
    * is also defined later in this script.
    *)?>
 <form method='get' action=''>
@@ -36,7 +36,7 @@ ordered by <select name='ord'>
       ["name", "Name"; "ext",  "Extension";
        "time", "Timestamp"; "size", "Size";
        "kind", "Kind"] ?> </select></form>
-<?(* ord_options (defined later) generates the option tags for the
+<?(* `ord_options' (defined later) generates the option tags for the
    * drop-down menu.
    *)?>
 <pre>
@@ -48,7 +48,7 @@ ordered by <select name='ord'>
 <?=postamble  (* page ends *) ?>
 <?(* Recall: declaration blocks (like the one below) are lifted up
    * before any of the page code; that is why we seem to use functions
-   * like list_files before defining them.
+   * like `list_files' before defining them.
    *)?>
 <?^type fileinfo = { name: string; ext: string; kind: string;
       mtime: float; size: int; md5: string; prn: string } ?>

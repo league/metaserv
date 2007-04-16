@@ -20,6 +20,8 @@ s:\\{:\\codelb{}:g
 s:\\}:\\coderb{}:g
 s:\\<:\\textlt{}:g
 s:\\>:\\textgt{}:g
+#s:{`}\([A-Za-z0-9_]+\){'}:{\VRfont \1}:g
+s:{`}\([a-z\\_]*\){'}:{\\VRfont \1}:g
 
 # Increase spacing
 #s:\\Head{}:\\Head{}\\baselineskip=11pt:
