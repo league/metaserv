@@ -6,7 +6,9 @@ else
   heap=x86-linux
 endif
 
+PERL=perl
 sml=$(HOME)/tmp/nj45/bin/sml
+CM=.cm
 ocaml=$(metadir)/metaocaml $(mlflags) $(addsuffix .cma, $(libs))
 ocamlc=$(metadir)/ocamlc -thread -g
 
@@ -17,12 +19,12 @@ mlflags+=-I +threads
 	$(ocamlc) -a -o $@ $^
 
 %.cmi: %.mli
-	$(ocamlc) -c $<
+	$(ocamlc) $(mlflags) -c $<
 
 %.cmo: %.ml
-	$(ocamlc) -c $<
+	$(ocamlc) $(mlflags) -c $<
 
-junk=*.cm? *~
+junk=*~
 texjunk=aux bbl blg brf dvi log out ps waux
 
 figs=power static browse test
@@ -33,4 +35,3 @@ figs_pdf=$(addsuffix .pdf, $(figs))
 static-sizes=01 02 04 08 16 32 64
 power-cases=17 127 255 511 1023 2047 4095 8191
 dir-sizes=02 04 08 16 32 64
-browse-dirs=./top server/server
