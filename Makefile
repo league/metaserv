@@ -20,6 +20,13 @@ CM = .cm
 
 # Other required programs
 PERL = perl
+ENCODE = uuencode -m -
+GNUPLOT = gnuplot
+CONVERT = convert
+EPSTOPDF = epstopdf
+TEXI2DVI = texi2dvi
+TEXI2PDF = texi2pdf
+DVIPS = dvips
 
 # Sizes to generate for benchmarking, etc.
 static_sizes = 01 02 04 08 16 32 64
@@ -40,23 +47,29 @@ run: default $(addprefix bench/d., $(dir_sizes))
 interact: default
 	$(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
 
+pdf: paper/paper.pdf
+ps: paper/paper.ps
+
 mostlyclean:
 	find . -name '*~' | xargs $(RM)
 	$(RM) server.log 
 	$(RM) -r metac/$(CM)
 
+tex_junk = aux bbl blg log out
 clean: mostlyclean
 	$(RM) metac/metac.*-* server/*.cm?
 	$(RM) scripts/run $(ml_files)
+	$(RM) $(screens_png) $(screens_eps)
+	$(RM) $(figs_tex) $(figs_eps) $(figs_pdf)
+	$(RM) $(addprefix paper/paper., $(tex_junk) dvi ps 2ps)
+	$(RM) -r paper/auto
 
 reallyclean: clean
 	$(RM) metac/meta.grm.* metac/meta.lex.*
-	$(RM) Makefile.depend
-	$(RM) scripts/static*.meta
+	$(RM) Makefile.depend scripts/static*.meta paper/paper.pdf
 	$(RM) -r bench/d.??
-	for d in $(subdirs); do $(MAKE) -C $$d reallyclean; done
 
-.PHONY: default run interact clean reallyclean
+.PHONY: default run interact pdf ps mostlyclean clean reallyclean
 
 ###################################################################
 ###  Implicit rules
@@ -86,9 +99,30 @@ endif
 # These are useful for generating random files and directories of
 # given size.
 scripts/static%.meta:
-	mimencode </dev/urandom | dd bs=1024 count=$* >$@
+	$(ENCODE) </dev/urandom | dd bs=1024 count=$* >$@
 bench/d.%:
 	cd bench && $(PERL) make-sim-dir $*
+
+# Image conversion
+%.png: %.tiff
+	$(CONVERT) $< -crop 0x0 $@
+%.eps: %.png
+	$(CONVERT) $< $@
+%.pdf: %.eps
+	$(EPSTOPDF) $<
+
+# GNUplot
+%.eps %.tex: %.gp
+	cd $(dir $<) && $(GNUPLOT) $(notdir $<)
+
+# LaTeX
+%.pdf: %.tex
+	cd $(dir $<) && TEXINPUTS=$(TEXINPUTS) $(TEXI2PDF) $(notdir $<)
+%.dvi: %.tex
+	cd $(dir $<) && TEXINPUTS=$(TEXINPUTS) $(TEXI2DVI) $(notdir $<)
+%.ps: %.dvi
+	cd $(dir $<) && \
+	TEXINPUTS=$(TEXINPUTS) $(DVIPS) -o $(notdir $@) $(notdir $<)
 
 ###################################################################
 ###  Dependencies
@@ -109,6 +143,21 @@ Makefile.depend: $(server_sources)
 # for metac:
 metac_sources := $(addprefix metac/, $(shell tail +2 metac/metac.cm))
 metac/metac.$(HEAP): $(metac_sources)
+
+# for paper:
+figures := $(addprefix bench/, static browse power)
+figs_tex := $(addsuffix .tex, $(figures))
+figs_eps := $(addsuffix .eps, $(figures))
+figs_pdf := $(addsuffix .pdf, $(figures))
+
+screens := $(addprefix paper/, confcal power127 server-dir gc)
+screens_png := $(addsuffix .png, $(screens))
+screens_eps := $(addsuffix .eps, $(screens))
+
+TEXINPUTS = ../bench:../scripts:
+tex_files = $(addprefix paper/, fonts.tex refs.bib)
+paper/paper.pdf: $(tex_files) $(screens_png) $(figs_tex) $(figs_pdf)
+paper/paper.dvi: $(tex_files) $(screens_eps) $(figs_tex) $(figs_eps)
 
 ###################################################################
 ###  Generating code map and run script 
