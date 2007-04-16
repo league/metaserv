@@ -4,18 +4,19 @@ set size .68,.6
 set logscale x
 set border 3
 
-set ylabel "Requests per second"
+set ylabel "Requests per second" 0.4
 set ytics nomirror 200
+set yrange [0:900]
 
-set xlabel "File size (bytes)"
-set xtics nomirror ("1k" 1024, "4k" 4096, "16k" 16384, "64k" 65536)
+set xlabel "File size (bytes)" 
+set xtics nomirror ("1k" 1024, "2k" 2048, "4k" 4096, "8k" 8192, "16k" 16384, "32k" 32768, "64k" 65536)
 set xrange [768:98304]
 set mxtics 2
 set grid ytics 
-set key 48000,1040 width 4 
+set key 5000,400 width 2 height 0.5 box
 
 #     "static.apache.dat"   with lp lw 2 title "Apache", \
 
-plot "static.camlcode.dat" with lp lw 2 pt 6 title "Caml code", \
-     "static.camlfile.dat" with lp lw 2 pt 8 title "Caml file", \
+plot "static.camlfile.dat" with lp lw 2 pt 8 title "Caml file", \
+     "static.camlcode.dat" with lp lw 2 pt 6 title "Caml code", \
      "static.php.dat"      with lp lw 2 pt 7 lt 4 title "PHP"

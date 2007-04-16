@@ -1,69 +1,44 @@
-<?pragma args d ?>
-<?^open Printf
-   open Unix
-   open List
- ?>
-<html>
-  <head>
-    <title>Directory <?=d?></title>
-    <link href="meta.css" rel="stylesheet" type="text/css" />
-  </head>
-<body>
-
-<?^let default_regex = (".*", Str.regexp ".*") ?>
+<?pragma args uri d ?>
+<?^open Printf open Unix open List ?>
+<?~=lift(preamble("browsing "^d))?>
+<?~=lift(navbar uri)?>
+<?^let default_re = "^[^\\.].*[^~]$" ?>
+<?^let default_re = (default_re, Str.regexp default_re)?>
 <? let (re,rc) = match arg "re" with
-       None -> default_regex
-     | Some r -> (r, Str.regexp r) 
- ?>
+       None -> default_re | Some r -> (r, Str.regexp r) ?>
 <?~let list = list_files d .<rc>. ?>
 <? let list = sort_by (arg "ord") list ?>
-
-
-<h1>Contents of &lsquo;<?=d?>&rsquo;</h1>
-<?"%d" length list?> files 
-
-<?^let rec ord_options puts ord opts =
-     match opts with
-       [] -> .<()>.
+  (* Generate the <option> tages, with one selected *)
+<?^let rec ord_options puts ord opts = 
+     match opts with [] -> .<()>.
      | (tag,text)::opts ->
-         .<(kprintf .~puts "<option %s value=\"%s\">%s</option>\n"
-              (if .~ord = tag then "selected" else "")
-              tag text;
-           .~(ord_options puts ord opts))>.
- ?>
+     .<(kprintf .~puts 
+          "<option %s value=\"%s\">%s</option>\n"
+          (if .~ord = tag then "selected" else "") tag text;
+       .~(ord_options puts ord opts))>. ?>
 <? let ord = match arg "ord" with
-       None -> "name"
-     | Some o -> o
- ?>
-
+       None -> "name" | Some o -> o ?>
 <form method="get" action="">
-Order:
-  <select name="ord">
-    <?~ord_options .<puts>. .<ord>.
-         ["name", "Name";
-          "ext",  "Extension";
-          "time", "Timestamp";
-          "size", "Size";
-          "kind", "Kind"]
-     ?>
-  </select>
-Filter: 
-  <input type="text" name="re" size="14" value="<?=re?>" />
-  <input type="submit" value="Redisplay" />
+<input type="submit" value="Redisplay" />
+files matching
+<input type="text" name="re" size="14" value="<?=re?>" />
+ordered by
+<select name="ord">
+  <?~ord_options .<puts>. .<ord>.
+       ["name", "Name";
+        "ext",  "Extension";
+        "time", "Timestamp";
+        "size", "Size";
+        "kind", "Kind"] ?>
+</select>
 </form>
-
 <pre>
 <?=header?>
 <? iter (fun f -> puts f.prn) list ?>
 </pre>
-<hr/>
-MetaOCaml <?=Sys.ocaml_version?>
+<?=postamble?>
 
-</body>
-</html>
-
-<?^ (*******************************************************************)
-
+<?^ 
 type fileinfo =
     { name: string;
       ext: string;
@@ -89,10 +64,10 @@ let sort_by order list = match order with
     else sprintf "%4dM" (n/1048576)
 
   let entry_fmt = format_of_string
-"<span class=\"md5\">%-32s</span>  %-29s  %5s  <span class=\"%s\">%s%s</span>\n"
+"<span class=\"md5\">%-32s</span>  %-13s  %5s  <a class=\"file\" href=\"%s\"><span class=\"%s\">%s</span></a>%s\n"
   let header = sprintf
-      "<b>%-32s  %-29s  %-5s  %s</b>\n"
-      "checksum" "modification time" "size" "name"
+      "<b>%-32s  %-13s  %-5s  %s</b>\n"
+      "checksum" "last modified" "size" "name"
 
   let fileinfo d name =
  (* printf "%s\n%!" name; *)
@@ -122,7 +97,9 @@ let sort_by order list = match order with
             | "cmi" -> "obj"
             | "cmo" -> "obj"
             | "ml"  -> "src"
+            | "sml" -> "src"
             | "mli" -> "hdr"
+            | "sig" -> "hdr"
             | _ -> "" in
           let i =
             if st.st_perm land 0o111 = 0 then "" else "*" in
@@ -131,9 +108,9 @@ let sort_by order list = match order with
           | other -> other in
     let prn = 
       sprintf entry_fmt md5
-        (TimeStamp.format st.st_mtime) 
+        (TimeStamp.brief st.st_mtime) 
         (human_size st.st_size)
-        kind name indicator
+        name kind name indicator
     in
     {name=name; ext=ext; kind=kind;
       mtime=st.st_mtime; size=st.st_size;
@@ -146,17 +123,17 @@ let rec read_all dh files =
   with End_of_file ->
     closedir dh;
     sort cmp files
+?>
 
-let list_files d re =
-  let rec loop term files =
-    match files with
-      [] -> term
-    | name::files ->
-        .<let list =
-            try ignore(Str.search_forward .~re name 0);
-                .~(lift(fileinfo d name)) :: .~term
-            with Not_found -> .~term
-          in .~(loop .<list>. files)>. in
-  loop .<[]>. (read_all (opendir d) [])
-
+<?^let list_files d re =
+     let rec loop term files =
+       match files with
+         [] -> term
+       | name::files ->
+         .<let list =
+             try ignore(Str.search_forward .~re name 0);
+                 .~(lift(fileinfo d name)) :: .~term
+             with Not_found -> .~term
+           in .~(loop .<list>. files)>. in
+     loop .<[]>. (read_all (opendir d) [])
  ?>

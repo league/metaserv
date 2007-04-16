@@ -1,0 +1,15 @@
+<?~=lift(preamble "Home")?>
+<?~=lift(navbar "/")?>
+<h1>MetaOCaml Server Pages</h1>
+
+<p>This is an example.  
+Compsec Vince Foster MD2 Area 51 NSA Project Monarch basement Dateline
+CIA ISEC kilderkin bomb Arnett monarchist bullion
+</p>
+
+<p>CDMA bullion industrial intelligence Noriega Baranyi 22nd SAS Taiwan
+industrial espionage ASIO Blowfish Rubin Becker crypto anarchy
+digicash argus
+</p>
+
+<?=postamble?>

@@ -1,0 +1,11 @@
+<?^let list_files d re =
+     let rec loop term files =
+       match files with [] -> term
+       | name::files ->
+         .<let list =
+             try ignore(Str.search_forward .~re name 0);
+                 .~(lift(fileinfo d name)) :: .~term
+             with Not_found -> .~term
+           in .~(loop .<list>. files)>. in
+     loop .<[]>. (read_all (opendir d) [])
+ ?>

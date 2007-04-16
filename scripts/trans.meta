@@ -1,0 +1,9 @@
+<?^ (* Declarations *) ?>
+<? (* Code *) ?>
+<?= (* String to be printed *) ?>
+Regular text.
+<?"format string" a, b, c ?>
+<?^ (* More declarations *) ?>
+<? let x = (* Expression *) ?>
+<? (* More code *) ?>
+Bye!

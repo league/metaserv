@@ -1,0 +1,2 @@
+<?^open Unix open Printf?>
+<?=.~(lift(sprintf "%04o" ((stat ".").st_perm)))?>

@@ -62,7 +62,7 @@ page
         in pragma page (splitl isAlphaNum (dropl isSpace (all CODE)))
        end)
   | LP_DECL CODE RP page
-      (addD page (fn d=> [S CODE, L d]))
+      (addD page (fn d=> [S CODE, S "\n", L d]))
   | LP_CODE_EQ CODE RP page 
       (addC page (fn c=> [S "puts (.~(", S CODE, S "));\n", L c]))
   | LP_EQ CODE RP page

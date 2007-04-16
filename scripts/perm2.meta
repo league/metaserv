@@ -1,0 +1,3 @@
+<?^open Unix?>
+<?let cwd = .~(lift(stat "."))?>
+<?"%04o" cwd.st_perm ?>

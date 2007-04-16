@@ -1,0 +1,36 @@
+<?~=lift(preamble "Uptime")?>
+<?~=lift(navbar "/uptime")?>
+<?^let start = Unix.time()
+   let unit s k n = 
+     let m = floor(n /. k) in
+     Printf.sprintf "%.0f %s%s" m s
+       (if m = 1. then "" else "s")
+   let sec = unit "second" 1.
+   let min = unit "minute" 60.
+   let hour = unit "hour" 3600.
+   let day = unit "day" 86400.
+   let both u1 u2 k n = 
+     let m = mod_float n k in
+     if m = 0. then u1 n
+     else u1 n^ ", "^ u2 m
+   let interval n =
+     if n < 90. then sec n
+     else if n < 5400. then both min sec 60. n
+     else if n < 172800. then both hour min 3600. n
+     else both day hour 86400. n
+ ?>
+<h1>Uptime</h1>
+
+<p>This server has been running for 
+<?=interval (Unix.time()-.start)?>.  
+<?(try
+    let i = open_in "/proc/uptime" in
+    let s = input_line i in
+    close_in i;
+    let j = String.index s ' ' in
+    let n = float_of_string (String.sub s 0 j) in
+    Printf.kprintf puts "The machine has been up for %s" (interval n)
+  with Sys_error msg -> 
+    Printf.kprintf puts "Sorry, machine uptime is unavailable (%s)" msg
+ )?>.</p>
+<?=postamble?>

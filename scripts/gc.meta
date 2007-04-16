@@ -1,78 +1,75 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>GC statistics</title>
-    <link href="/meta.css" rel="stylesheet" type="text/css" />
-  </head>
-<body>
-<h1>GC statistics</h1>
-<?^ open Gc ?>
+<?~=lift(preamble "GC statistics")?>
+<?~=lift(navbar "/gc")?>
+<?^open Gc open Buffer
+   let interval = 3 let delim = ","
+   let fmt s =
+     let n = String.length s in
+     let buf = create (n*2) in add_string buf "<b>";
+     let i = ref((n-1) mod interval + 1) in
+     add_string buf (String.sub s 0 (!i));
+     while !i < n do
+       add_string buf delim;
+       add_string buf (String.sub s (!i) interval);
+       i := !i + interval
+     done;
+     add_string buf "</b>";
+     contents buf
+   let i n = fmt (string_of_int n)
+   let f m = fmt (Printf.sprintf "%.0f" m) ?>
+<h1>Garbage collector statistics</h1>
 <?let st = stat() ?>
-<p>
-Current time is <?=TimeStamp.now()?><br/>
-Server up since <?~=lift(TimeStamp.now())?><br/>
-<?~=lift(let i = Unix.open_process_in "uname -a" in
-         let uname = input_line i in
-         let _ = Unix.close_process_in i in
-         uname)?>
-<pre>
-minor_words <b><?"%.0f" st.minor_words ?></b> 
-(* Number of words allocated in the minor heap since
+<dl><dt>minor words: <?=f st.minor_words ?></dt> 
+ <dd>Number of words allocated in the minor heap since
    the program was started.  This number is accurate in
-   byte-code programs, but only an approximation in programs
-   compiled to native code. *)
+   byte-code programs, but only an approximation in 
+   programs compiled to native code.</dd>
+ <dt>promoted words: <?=f st.promoted_words ?></dt>
+ <dd>Number of words allocated in the minor heap that
+   survived a minor collection and were moved to the 
+   major heap since the program was started.</dd>
+(* etc. *)
+<dt>major words: <?=f st.major_words ?></dt>
+<dd>Number of words allocated in the major heap, including
+   the promoted words, since the program was started.</dd>
 
-promoted_words <b><?"%.0f" st.promoted_words ?></b>
-(* Number of words allocated in the minor heap that
-   survived a minor collection and were moved to the major heap
-   since the program was started. *)
+<dt>minor collections: <?=i st.minor_collections ?></dt>
+<dd>Number of minor collections since the program was started.</dd>
 
-major_words <b><?"%.0f" st.major_words ?></b>
-(* Number of words allocated in the major heap, including
-   the promoted words, since the program was started. *)
+<dt>major collections: <?=i st.major_collections ?></dt>
+<dd>Number of major collection cycles completed since the program
+    was started.</dd>
 
-minor_collections <b><?"%d" st.minor_collections ?></b>
-(* Number of minor collections since the program was started. *)
+<dt>heap words: <?=i st.heap_words ?></dt>
+<dd>Total size of the major heap, in words.</dd>
 
-major_collections <b><?"%d" st.major_collections ?></b>
-(* Number of major collection cycles completed since the program
-    was started. *)
+<dt>heap chunks: <?=i st.heap_chunks ?></dt>
+<dd>Number of contiguous pieces of memory that make up the major heap.</dd>
 
-heap_words <b><?"%d" st.heap_words ?></b>
-(* Total size of the major heap, in words. *)
+<dt>live words: <?=i st.live_words ?></dt>
+<dd>Number of words of live data in the major heap, including the header
+   words.</dd>
 
-heap_chunks <b><?"%d" st.heap_chunks ?></b>
-(* Number of contiguous pieces of memory that make up the major heap. *)
+<dt>live blocks: <?=i st.live_blocks ?></dt>
+<dd>Number of live blocks in the major heap.</dd>
 
-live_words <b><?"%d" st.live_words ?></b>
-(* Number of words of live data in the major heap, including the header
-   words. *)
+<dt>free words: <?=i st.free_words ?></dt>
+<dd>Number of words in the free list.</dd>
 
-live_blocks <b><?"%d" st.live_blocks ?></b>
-(* Number of live blocks in the major heap. *)
+<dt>free blocks: <?=i st.free_blocks ?></dt>
+<dd>Number of blocks in the free list.</dd>
 
-free_words <b><?"%d" st.free_words ?></b>
-(* Number of words in the free list. *)
+<dt>largest free: <?=i st.largest_free ?></dt>
+<dd>Size (in words) of the largest block in the free list.</dd>
 
-free_blocks <b><?"%d" st.free_blocks ?></b>
-(* Number of blocks in the free list. *)
-
-largest_free <b><?"%d" st.largest_free ?></b>
-(* Size (in words) of the largest block in the free list. *)
-
-fragments <b><?"%d" st.fragments ?></b>
-(* Number of wasted words due to fragmentation.  These are
+<dt>fragments: <?=i st.fragments ?></dt>
+<dd>Number of wasted words due to fragmentation.  These are
    1-words free blocks placed between two live blocks.  They
-   are not available for allocation. *)
+   are not available for allocation.</dd>
 
-compactions <b><?"%d" st.compactions ?></b>
-(* Number of heap compactions since the program was started. *)
+<dt>compactions: <?=i st.compactions ?></dt>
+<dd>Number of heap compactions since the program was started.</dd>
 
-top_heap_words <b><?"%d" st.top_heap_words ?></b>
-(* Maximum size reached by the major heap, in words. *)
-</pre></p>
-<hr/>
-MetaOCaml <?=Sys.ocaml_version?>
-</body>
-</html>
+<dt>top heap words: <?=i st.top_heap_words ?></dt>
+<dd>Maximum size reached by the major heap, in words.</dd>
+</dl>
+<?=postamble?>

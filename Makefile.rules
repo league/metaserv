@@ -25,7 +25,12 @@ mlflags+=-I +threads
 junk=*.cm? *~
 texjunk=aux bbl blg brf dvi log out ps waux
 
+figs=power static browse test
+figs_tex=$(addsuffix .tex, $(figs))
+figs_eps=$(addsuffix .eps, $(figs))
+figs_pdf=$(addsuffix .pdf, $(figs))
+
 static-sizes=01 02 04 08 16 32 64
-power-cases=A/127 B/255 C/511 D/1023 E/2047 F/4095 G/8191
+power-cases=17 127 255 511 1023 2047 4095 8191
 dir-sizes=02 04 08 16 32 64
 browse-dirs=./top server/server

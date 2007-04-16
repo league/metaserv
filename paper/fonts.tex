@@ -1,6 +1,8 @@
 \makeatletter
 \usepackage{struktur,bodoni}
-
+\def\labelitemi{\textbullet}
+\def\la{{\rawrm\char'074}}
+\def\ra{{\rawrm\char'076}}
 \iffalse
 \renewcommand{\Large}{\sffamily\fontsize\@xivpt{18}}
 \renewcommand\section{\@startsection{section}{1}{\z@}%
@@ -15,7 +17,51 @@
                         \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
 \fi
 
+\def\opencode{{\rawhv\char'074}{\rawbf?}}
+\def\closecode{{\rawbf?}{\rawhv\char'076}}
+\lstdefinelanguage{meta}
+  {morekeywords={and,as,begin,do,done,downto,else,end,exception,for,%
+      fun,if,in,let,match,val,mutable,not,of,open,or,prefix,rec,then,%
+      try,while,with},%
+   morecomment=[n]{(*}{*)},%
+   morestring=[b]",%
+   escapeinside={(*@}{@*)},%
+   literate=
+     {->}{$\rightarrow\;$}2
+     {<}{\la}1
+     {>}{\ra}1
+     {\\}{{\rawrm\char'134}}1
+     {|}{{\rawrm\char'174}\thinspace}1
+     {<=}{{\rawrm\char'235}\thinspace}1
+     {"}{{\rawrm\char'042}}1
+     {'}{{\rawrm\char'264}}1
+     {<?}{{\color{green}\opencode}\thinspace}2
+     {<?pragma}{{\color{green}\opencode}pragma\ }8
+     {<?^}{{\color{green}\opencode{\rawhv\char'136}}}3
+     {<?"}{{\color{green}\opencode{\rawrm\char'042}}}3
+     {<?~}{{\color{green}\opencode{\rawhv\char'176}}}3
+     {<?=}{{\color{green}\opencode{\rawhv\char'075}}\thinspace}3
+     {<?~=}{{\color{green}\opencode{\rawhv\char'176\char'075}}\thinspace}4
+     {?>}{\thinspace{\color{green}\closecode}}2
+     {.<}{{\color{blue}\rawhv.\char'074}\thinspace}2
+     {>.}{\thinspace{\color{blue}\rawhv\char'076.}}2
+     {.~}{{\color{blue}\rawhv.\char'176}}2
+   }
+
+\definecolor{green}{rgb}{0,.6,0}
+\definecolor{blue}{rgb}{0,0,.6}
+\lstset{columns=fullflexible,
+  basicstyle=\sffamily,
+  keywordstyle=\bfseries, belowskip=0pt,
+  numbers=left, numberstyle=\tiny, numbersep=4pt
+}
+
+\lstset{language=meta}
+
 %% Following is for fiddling with acmproc-sp fonts
+\font\rawrm     = 5sxr8r at 9pt
+\font\rawbf     = 5sxb8r at 9pt
+\font\rawhv     = 5sxh8r at 9pt
 \font\ixpt      = 5bdrx7t at 9pt
 \font\confname  = 5bdrix7t at 8pt
 \font\crnotice  = 5bdrx7t at 8pt

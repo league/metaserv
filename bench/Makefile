@@ -1,5 +1,4 @@
 include ../Makefile.rules
-figs=power static browse test
 TEX=latex
 
 default: $(addprefix d., $(dir-sizes))
@@ -8,12 +7,10 @@ clean:
 	rm -rf $(junk) auto
 	rm -f $(addprefix figs., $(texjunk)) figs.pdf
 	rm -f $(addprefix testpage., $(texjunk))
+	rm -f $(figs_tex) $(figs_eps) $(figs_pdf)
 
 reallyclean: clean
-	rm -rf r.* d.??
-	rm -f $(addsuffix .eps, $(figs))
-	rm -f $(addsuffix .tex, $(figs))
-	rm -f $(addsuffix .pdf, $(figs))
+	rm -rf r.* d.?? 
 
 depend:
 

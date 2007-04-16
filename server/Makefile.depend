@@ -24,3 +24,5 @@ codeHandler.cmo: chunked.cmi request.cmi server.cmi status.cmi stringMap.cmi \
 codeHandler.cmx: chunked.cmx request.cmx server.cmx status.cmx stringMap.cmx \
     timeStamp.cmx codeHandler.cmi 
 codeHandler.cmi: request.cmi server.cmi stringMap.cmi 
+navBar.cmo: navBar.cmi 
+navBar.cmx: navBar.cmi 

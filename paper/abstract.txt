@@ -1,0 +1,18 @@
+Modern dynamic web services are really computer programs.  Some
+parts of these programs run off-line, others run server-side on
+each request, and still others run within the browser.  In other
+words, web publishing is staged computation, either for better
+performance, or because certain resources are available in one
+stage but not another.  Unfortunately, the various web
+programming languages target one stage only.  This is a
+tremendous opportunity for multi-stage languages in general, and
+for MetaOCaml in particular.
+
+We present the design of MetaOCaml Server Pages.  Unlike other
+languages in its genre, the embedded MetaOCaml code blocks may
+be annotated with staging information, so that the programmer
+may safely and precisely control which computation occurs in
+which stage.  A prototype web server, written in OCaml, supports
+web sites with both static and dynamic content.  We provide
+several sample programs and demonstrate the performance gains
+won using multi-stage programming.

@@ -1,0 +1,27 @@
+<?~=lift(preamble "Server architecture")?>
+<?~=lift(navbar "/uname")?>
+<?^let run cmd =
+     let i = Unix.open_process_in cmd in
+     let result = input_line i in
+     ignore(Unix.close_process_in i);
+     result
+   let arch = run "uname -m"
+   let an = 
+     if Str.string_match (Str.regexp "[aoeuiAOEUI]") arch 0
+     then "an"
+     else "a"
+   let opsys = run "uname"
+   let uname = Str.global_replace (Str.regexp "[;: ] +") "\n" (run "uname -a")
+   let host = Str.global_replace (Str.regexp "\\..*") "" (Unix.gethostname())
+ ?>
+
+<h1>Server architecture</h1>
+
+<p><em><?=host?></em> is <?=an?> <?=arch?> running the <?=opsys?> kernel 
+and MetaOCaml version <?=Sys.ocaml_version?>.  The full output of 
+&ldquo;<code>uname&nbsp;-a</code>&rdquo; follows...</p>
+
+<pre class="box"><?=uname?>
+</pre>
+
+<?=postamble?>

@@ -1,12 +1,10 @@
 a.file {
   text-decoration: none;
-  color: black;
 }
-
 a.file:hover {
   background: yellow;
 }
-
+span { color: black; }
 span.dir  { color: blue; }
 span.lib  { color: brown; }
 span.obj  { color: grey; }
@@ -15,3 +13,98 @@ span.src  { color: #b60; }
 span.hdr  { color: #990; }
 span.exe  { color: purple; }
 span.md5  { color: grey; font-style: italic; }
+
+div#body {
+  margin: 4pt 6pt;
+}
+body {
+  font-family: "Georgia", serif;
+  margin: 4px 0;
+}
+h1 {
+  font-family: "Trebuchet MS", sans;
+  font-size: large;
+  margin: 1.4ex 0 1ex;
+}
+h3 {
+  font-family: "Trebuchet MS", sans;
+  font-size: medium;
+  margin: 1ex 0 .6ex;
+}
+dd { 
+  margin-bottom: .6ex;
+}
+pre, code {
+  font-family: "Monaco", monospace;
+}
+pre {
+  font-size: small;
+}
+pre.box {
+  margin: .5em;
+  padding: .5em;
+  border: 2px ridge grey;
+  background: #cff;
+}
+div#nav {
+  font-size: small;
+  font-family: "Trebuchet MS", sans;
+}
+div#nav a {
+  text-decoration: none;
+  color: black;
+}
+p {
+  margin: 1ex 0;
+}
+ul.submenu {
+  list-style: none;
+  margin: 0;
+  padding: 2pt 2em;
+  border-bottom: 1px solid black;
+}
+ul.submenu li {
+  display: inline;
+  margin: 0;
+  padding: 0 .8em;
+}
+ul.menu {
+  list-style: none;
+  margin: 0;
+  padding: 2pt 1em 0;
+}
+ul.menu li {
+  display: inline;
+  margin: 0;
+  height: 1ex;
+  padding: 2pt 1em;
+  border: 1px solid #aaa;
+  border-bottom: none;
+}
+ul.menu li a img {
+  position: relative;
+  top: 2px;
+  border: none;
+}
+
+li.nav0#selected { background: #fff; }
+ul.submenu#nav0  { background: #aaa; }
+li.nav1#selected, ul.submenu#nav1 { background: #f88; }
+li.nav2#selected, ul.submenu#nav2 { background: #ff8; }
+li.nav3#selected, ul.submenu#nav3 { background: #8f8; }
+li.nav4#selected, ul.submenu#nav4 { background: #88f; }
+li.nav5#selected, ul.submenu#nav5 { background: #f8f; }
+
+li.nav0#selected { border: 1px solid black; border-bottom: 1px solid #fff;}
+li.nav1#selected { border: 1px solid black; border-bottom: 1px solid #f88;}
+li.nav2#selected { border: 1px solid black; border-bottom: 1px solid #ff8;}
+li.nav3#selected { border: 1px solid black; border-bottom: 1px solid #8f8;}
+li.nav4#selected { border: 1px solid black; border-bottom: 1px solid #88f;}
+li.nav5#selected { border: 1px solid black; border-bottom: 1px solid #f8f;}
+
+ul.submenu#nav0 li#subselected { background: #ccc; }
+ul.submenu#nav1 li#subselected { background: #c55; }
+ul.submenu#nav2 li#subselected { background: #cc5; }
+ul.submenu#nav3 li#subselected { background: #5c5; }
+ul.submenu#nav4 li#subselected { background: #55c; }
+ul.submenu#nav5 li#subselected { background: #c5c; }

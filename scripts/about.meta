@@ -1,0 +1,6 @@
+<?~=lift(preamble "About this site")?>
+<?~=lift(navbar "/about")?>
+
+About this site?
+
+<?=postamble?>

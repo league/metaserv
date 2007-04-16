@@ -18,5 +18,12 @@ let format' tz tm =
 
 let format t = format' "GMT" (gmtime t)   
 
+let brief t =
+  let tm = localtime t in
+  Printf.sprintf "%2d %s %02d:%02d"
+    tm.tm_mday
+    months.(tm.tm_mon)
+    tm.tm_hour tm.tm_min
+
 let now() = format(time())
 
