@@ -1,0 +1,54 @@
+MetaOCaml Server Pages: Web Publishing as Staged Computation
+Science of Computer Programming 62(1), September 2006.  Elsevier.
+
+http://contrapunctus.net/league/research/papers/
+http://contrapunctus.net/league/haques/metaserv/
+
+Copyright (c)2006 by Christopher League
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+                   --------------------------------
+
+These are some preliminary notes about running and hacking on
+MetaOCaml Server Pages.  See the paper for more details on how it
+works, and ask me if you don't understand something; I'm happy to
+cooperate and collaborate.
+
+Building should be almost this easy:
+
+$ darcs get http://comsci.liu.edu/~league/dist/metaserv/trunk metaserv
+$ cd metaserv
+$ make all
+$ make run
+
+Wait for it to say "Ready...", and then open your browser to
+http://localhost:1090/
+to see the demo.
+
+Caveats:
+
+Give it a C-c (or kill -INT) to trigger a server shutdown.
+
+1. It probably requires GNU make.
+
+2. You will need metaocaml already installed, AND *SML/NJ* (I used it  
+to write the translator, since I didn't feel like learning the OCaml  
+version of Lex and Yacc).  The makefile has variables METADIR and SML
+
+3. It works for me on both linux/x86 and mac/ppc.
+
+4. The hackiness I mentioned before is mostly embodied in the scripts/ 
+run file, which is created by make.  Just look at the rule to create  
+it, starting at Makefile:256... UGLY.  Can explain later.
+
+5. There are probably more that I can't remember at the moment...
+
