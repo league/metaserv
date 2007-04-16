@@ -1,5 +1,5 @@
 \documentclass[preprint]{acm_proc_article-sp}
-\usepackage{ucs,textcomp,url,graphicx,color}
+\usepackage{ucs,textcomp,url,xspace,graphicx,color}
 \usepackage[leftno,lineno5]{lgrind}
 \usepackage[bf]{caption2}
 \usepackage[numbers]{natbib}
@@ -13,7 +13,7 @@
   ]{hyperref}
 \fi
 \input{fonts}
-\def\MOC{MetaOCaml}
+\def\MOC{MetaOCaml\xspace}
 \hyphenation{Meta-OCaml data-base Slash-dot}
 \def\quote{\list{}{\leftmargin1.4em\rightmargin1em}\item[]}
 \newcommand{\myfig}[3]{%
@@ -341,7 +341,7 @@ and listing~\ref{lst:trans.ml} contains its translation.
 
 Declaration blocks have been lifted to the top; any side effects
 contained there are executed when the page is published.  The
-constructed code begins on line~\ref{line:page} of
+constructed code begins on line~{???line:page} of
 listing~\ref{lst:trans.ml}.  It is a function of two arguments:
 \cd{req} encapsulates the HTTP request, including the headers
 and query arguments; \cd{puts} is a function with type
@@ -412,18 +412,15 @@ ways.  For example, requesting the URI \id{/longcount} could print a
 count-down from 99, while \id{/shortcount} starts at 9 instead.  Both
 are generated from the same server page.  Mapping from URIs to
 instantiated \MOC{} code is, for now, an implementation detail
-(see \S\ref{sec:impl}).
+(see section~\ref{sec:impl}).
 
 \section{Examples}
 \label{sec:eg}
 
 To explore the expressiveness of this design, we now look at a
 series of web services, organized to comprise a small web
-site.
-%\footnote{I hope to make the demo available on the web in time
-%  for the workshop; this will require convincing the I.T. folks to
-%  open up a non-standard port through the firewall.  For now, it may
-%  be downloaded and run locally.} %
+site.\footnote{A demo is available at
+  \url{http://comsci.liu.edu/metaserv/}}
 To give the services a similar look, we developed a site-wide style
 sheet, and an OCaml function to generate a navigation bar from a
 hierarchical list of page titles and links.  The following bindings are
@@ -444,9 +441,10 @@ Judging from its prevalence in the literature, we are certain that
 millions of grateful users would subscribe to an online service
 capable of computing the \emph{power} function!  The screen shot in
 figure~\ref{fig:power127} illustrates how it works.  The navigation
-bar shows the exponents for which code has been pre-generated.  It is
-not possible, with the current implementation, for the user to request
-other exponents (see \S\ref{sec:impl} for an explanation).  After
+bar shows the exponents for which code has been
+pre-generated.\footnote{In the current implementation, it is not
+  possible for the user to request other exponents once the server is
+  running.  See section~\ref{sec:impl} for an explanation.}  After
 selecting the exponent, the user types the base into the form and
 presses return.  The result is computed using OCaml's
 arbitrary-precision \cd{Num} module.  The implementation of this
@@ -463,10 +461,10 @@ service appears in listing~\ref{lst:power.meta}.
   argument; but the base \cd{x} is late (serve stage).}
 
 The first function wraps a string into a fixed width block.  The power
-function itself begins on line~\ref{line:power-fun}.  No output should
+function itself begins on line~{???line:power-fun}.  No output should
 occur until the preamble is generated on
-line~\ref{line:power-preamble}.  The user's input is translated to a
-number relatively late (line~\ref{line:power-num}); if there is a
+line~{???line:power-preamble}.  The user's input is translated to a
+number relatively late (line~{???line:power-num}); if there is a
 problem here, the navigation bar and form will have already been
 output before the exception message.
 
@@ -483,29 +481,33 @@ directories.  The web server generates, on the fly, an HTML page
 containing the names and attributes of (and hyperlinks to) all
 the files in the directory.  In Apache, the
 \texttt{mod\_autoindex} module provides this feature.
+%%
+ViewCVS\footnote{\url{http://viewcvs.sourceforge.net/}} is a more
+complex example of the same idea. It is a Python program that sits on
+the web server and allows remote users to browse a CVS repository with
+a standard web browser.
 
-ViewCVS is a more complex example of the same idea.  It is a
-Python program that sits on the web server and allows remote
-users to browse a CVS repository with a standard web browser.
+This kind of service can be fairly intense; one HTTP request is likely
+to generate dozens of system calls and disk accesses.  If the
+directory is viewed more often that it is changed, then it makes sense
+to cache or pre-generate the pages.  Although it is simple enough to
+write a script to generate directory pages off-line, what if we also
+want dynamic user-controlled behavior, such as sorting and filtering?
 
-This kind of service can be fairly intensive; a single HTTP
-request is likely to generate dozens of system calls and disk
-accesses.  If the directory is viewed more often that it is
-changed, then it makes sense to cache or pre-generate the pages.
-It's simple enough to write a script to generate directory pages
-off-line, but what if we also want dynamic user-controlled
-behavior, such as sorting and filtering?
 
-Our contribution to the genre not only lists files in a given
-directory, but displays their MD5 checksums, renders their sizes
-in human-readable form (140k or 1.2M), and colorizes their names
-based on their extension or kind.  At serve time, the user may
-specify a regular expression for filtering, and one of 5
-criteria for sorting.  The screen shot in
-figure~\ref{fig:server-dir} shows the result of browsing the
-source directory of the server.
+We implemented
+contribution to the genre not only lists files in a given
+directory, but displays their MD5 checksums, renders their sizes in
+human-readable form (`1.2M' rather than `1194822'), and colorizes their
+names based on their extension or kind.  At serve time, the user may
+specify a regular expression for filtering, and one of 5 criteria for
+sorting.  The screen shot in figure~\ref{fig:server-dir} shows the
+result of browsing the source directory of the server.
 
-\screenshot{server-dir}{Browsing the server source code directory.}
+\screenshot{server-dir}{Browsing the server source code directory.
+  File names are colored according to their \emph{kind,} which is
+  computed from the extension and the file type.  See also
+  listing~\ref{lst:dir.meta}.}
 
 This service is a bit like the conference calendar outlined in
 section~\ref{sec:intro}.  Everything that can be pre-generated
@@ -515,31 +517,28 @@ The text of each row is ready and waiting.  At serve time, the files
 need not be opened or even \id{stat}ted.  The crux of the
 implementation is shown in listing~\ref{lst:dir.meta}:
 
-\mylst{dir.meta}{...}
+\mylst{dir.meta}{This implements the directory browser shown in
+  figure~\ref{fig:server-dir}.} 
 
-In the first stage, this reads
-all the filenames in the directory and sorts them by name.  Then
-it looks up the fileinfo, computes the MD5 sum, and prepares the
-text of each row.  Finally, it generates code that matches the
-filename against a (future-stage) regular expression, and
-includes it in a list only if it matches.  In the next stage,
-this list will be constructed and sorted (if necessary).  
+In the first stage, this reads all the filenames in the directory and
+sorts them by name.  Then it looks up the fileinfo, computes the MD5
+sum, and prepares the text of each row.  Finally, it generates code
+that matches the filename against a (future-stage) regular expression,
+and includes it in a list only if it matches.  In the next stage, this
+list will be constructed and sorted (if necessary).
 
 
 \subsection{Server introspection}
 
-Some web servers can be configured to display their status in
-response to certain URIs (such as \id{/server-status} on
-Apache).  We programmed a few status services in \MOC.  The
-screen shot in figure~\ref{fig:gc} displays garbage collection
-statistics from the OCaml \id{GC} module.
+Some web servers can be configured to display their status in response
+to certain URIs (such as \id{/server-status} on Apache).  We
+programmed a few status services in \MOC.  The screen shot in
+figure~\ref{fig:gc} displays garbage collection statistics from the
+OCaml \id{GC} module.  The only thing pre-generated here is the
+navigation bar.
 
-\screenshot{gc}{Garbage collector statistics.}
-
-The only complicated bit in the code is to format the numbers
-using commas every three digits.  The descriptions are copied
-directly from the \id{gc.mli} interface in OCaml.  The only
-thing pre-generated here is the navigation bar (line 2).
+\screenshot{gc}{Garbage collector statistics.  The descriptions are
+  copied directly from the \id{gc.mli} interface in OCaml.}
 
 %\lgrindfile{gc.meta}
 
@@ -633,7 +632,7 @@ way.  Eventually, the cost of those multiplications dominates
 everything else.\footnote{The final result,
   2\textsuperscript{8191} has 2,466 digits in base 10!}
 
-\gnuplot{power}{Staged vs.\@ unstaged power function.  The
+\gnuplot{power}{Staged versus unstaged power function.  The
   server page computes 2 to the given power
   (2\textsuperscript{127}, 2\textsuperscript{255}, etc.)}
 
@@ -643,9 +642,8 @@ we created directories containing a fixed number of files with
 random data.  The average file size was 32k.  The \emph{x}~axis
 shows the number of files in the directory.  
 
-\gnuplot{browse}{Staged vs.~unstaged directory browsing.  *The
-  Apache results refer to \texttt{mod\_autoindex}; it does
-  \emph{not} compute the MD5 sum.}
+\gnuplot{browse}{Staged versus unstaged directory browsing, in \MOC
+  and PHP.}
 
 Directory browsing was the most realistic of the examples, and
 the benefit of staging is crystal clear.  In browsing a
@@ -661,10 +659,6 @@ still filtered and sorted the results on demand.  The staged
 directory browser answered more than 550 requests (for the same
 64-file directory) per second.
 
-Figure~\ref{fig:browse} also includes the performance of
-Apache's directory browser, \texttt{mod\_autoindex}.  It cannot
-keep up with the staged browser, even though it doesn't compute
-the MD5 sum or filter the files on demand.
 
 \section{Related work}
 \label{sec:related}
@@ -725,6 +719,11 @@ We have shown the substantial benefits of this approach in terms
 of performance and expressiveness, although the prototype
 implementation suffers some limitations because it is unable to
 read and write generated code to a file.
+
+\section*{Acknowledgments}
+
+Many thanks to the anonymous reviewers of the \MOC workshop, for
+helpful recommendations on both the work and the presentation.
 
 \bibliographystyle{abbrvnat}
 \raggedright

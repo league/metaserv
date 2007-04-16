@@ -1,9 +1,11 @@
 <?^open Num 
+  (* Wrap a string into a fixed-width block. *)
   let width = 54
   let rec wrap puts s = 
     if String.length s <= width then puts s else
       (puts (Str.string_before s width); puts "\n";
        wrap puts (Str.string_after s width))
+  (* Staged implementation of power function. *)
   let is_zero = eq_num (Int 0)
   let square x = .<let z = .~x in z */ z>.
   let rec power n x = 
@@ -14,9 +16,9 @@
  ?>
 <?pragma args y ?>
 <?!let y' = string_of_num y ?>
-<? let x' = match (arg "x") with
+<?let x' = match (arg "x") with
      Some v -> v | None -> "2" ?>
-<?=preamble(x'^"^"^y') ?>
+<?=preamble(x'^"^"^y')   (* Output begins here *) ?>
 <?!=navbar("/power"^string_of_num y) ?>
 <form method='get'>
   This page computes 

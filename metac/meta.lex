@@ -8,7 +8,7 @@ type arg = lexresult arg
 %%
 %header (functor MetaLexFun(Tokens: Meta_TOKENS));
 %arg ({push,dump,inc,dec,pos,<<,<<$,...});
-%s PROC TRACE STR;
+%s PROC TRACE STR COMMENT;
 %%
 
 <INITIAL>"<?^"    => (<<yytext LP_DECL before YYBEGIN PROC);
@@ -42,6 +42,7 @@ type arg = lexresult arg
 
 <TRACE>"?>"   => (<<yytext RP before YYBEGIN INITIAL);
 <TRACE>"?>\n" => (<<yytext RP before YYBEGIN INITIAL);
+<TRACE>"(*"   => (YYBEGIN COMMENT; continue());
 <TRACE>".<"   => (<<yytext LANGLE);
 <TRACE>">."   => (<<yytext RANGLE);
 <TRACE>"("    => (<<yytext LPAREN);
@@ -58,6 +59,10 @@ type arg = lexresult arg
 <TRACE>[ \t\n]+ => (<<$yytext "c1" CODE);
 <TRACE>[A-Za-z_']+ => (<<$yytext "c2" CODE);
 <TRACE>. => (<<$yytext "c3" CODE);
+
+<COMMENT>"*)" => (YYBEGIN TRACE; continue());
+<COMMENT>"\n" => (continue());
+<COMMENT>.    => (continue());
 
 . => (print ("\n"^pos2str(pos())^": Error: unrecognized character #\""^
              Char.toString (String.sub(yytext,0))^"\"\n");

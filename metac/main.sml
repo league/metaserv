@@ -28,7 +28,7 @@ fun parse f =
     end
 
 fun main(_,[f]) =
-    let val {decl,code,pragmas} = parse f
+   (let val {decl,code,pragmas} = parse f
         val base = OS.Path.base f
         val m = explode(OS.Path.file base)
         val m = implode(Char.toUpper(hd m) :: tl m)
@@ -45,7 +45,10 @@ fun main(_,[f]) =
       ; w "\n>.\nend\n"
       ; TextIO.closeOut out
       ; 0
-    end
+    end handle e =>
+               (TextIO.output(TextIO.stdErr, exnMessage e);
+                TextIO.output(TextIO.stdErr, "\n");
+                2))
   | main _ = 
     (TextIO.output(TextIO.stdErr, "Usage: metac filename.meta\n");
      1)

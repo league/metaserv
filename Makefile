@@ -57,20 +57,24 @@ bench: $(staged_php)
 
 pdf: paper/paper.pdf
 ps: paper/paper.ps
+dvi: paper/paper.dvi
 
-mostlyclean:
+tex_junk = aux bbl blg log out waux
+texclean:
+	$(RM) $(addprefix paper/paper., $(tex_junk))
+
+mostlyclean: texclean
 	find . -name '*~' | xargs $(RM)
 	$(RM) server.log 
 	$(RM) -r metac/$(CM)
 
-tex_junk = aux bbl blg log out
 clean: mostlyclean
 	$(RM) metac/metac.*-* server/*.cm? $(staged_php)
 	$(RM) scripts/run scripts/trans.ml $(ml_files)
 	$(RM) $(screens_png) $(screens_eps) $(listings_tex)
 	$(RM) $(figs_tex) $(figs_eps) $(figs_pdf)
-	$(RM) $(addprefix paper/paper., $(tex_junk) dvi ps 2ps)
-	$(RM) -r paper/auto
+	$(RM) $(addprefix paper/paper., dvi wdvi ps 2ps)
+	$(RM) -r paper/auto paper/_whizzy* paper/._whizzy*
 
 reallyclean: clean
 	$(RM) metac/meta.grm.* metac/meta.lex.*

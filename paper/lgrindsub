@@ -4,7 +4,7 @@ s:^.*\?\\>RM.*$:{\\C{}}:
 s:^.*RM\\<\?.*$:{\\CE{}}:
 
 # MetaOCaml operators
-s:\.\\<:\\Mbegincode:g
+s:\.\\<:\\Mbegincode{}:g
 s:\\>\.:\\Mendcode:g
 s:\.\\~:\\Msplice:g
 
