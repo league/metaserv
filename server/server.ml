@@ -24,16 +24,10 @@ let stop server =
 
 let threaded_server log session_fun sock_addr =
 
-  let new_thread f x =
-    let t = Thread.create f x in
+  let announce_death() =
     Printf.kprintf (LogFile.add log) 
-      "t%d created" (Thread.id t) in
+      "t%d terminated" (Thread.id (Thread.self())) in
   
-  let end_thread() =
-    let t = Thread.self() in
-    Printf.kprintf (LogFile.add log)
-      "t%d terminated" (Thread.id t) in
-
   let domain =
     match sock_addr with 
     | ADDR_UNIX _ -> PF_UNIX
@@ -51,10 +45,11 @@ let threaded_server log session_fun sock_addr =
     Mutex.lock server.mutex;
     server.threads <- TMap.remove (Thread.self()) server.threads;
     Mutex.unlock server.mutex;
-    close_out o;
-    end_thread() in
+    close_out_noerr o;
+    LogFile.thread log false in
 
   let session (fd,a) =
+    LogFile.thread log true;
     Mutex.lock server.mutex;
     server.threads <- TMap.add (Thread.self()) fd server.threads;
     Mutex.unlock server.mutex;
@@ -76,13 +71,13 @@ let threaded_server log session_fun sock_addr =
         let cn = 
           try accept sock 
           with Unix_error _ -> raise Exit in
-        new_thread session cn
+        ignore(Thread.create session cn)
       done 
     with
-      Exit -> end_thread() 
+      Exit -> LogFile.thread log false
     | Sys.Break -> stop server in
-  (*new_thread*) 
-  master ();
+
+  master();
   server
 
 let error_handler req out status =
@@ -141,7 +136,8 @@ let start
         [] -> record (error_handler req o (status_of_exn exn))
       | h::hs -> 
           try record (h req o)
-          with exn -> loop exn hs in
+          with Exit -> raise Exit
+          | exn -> loop exn hs in
     loop Not_implemented handlers;
     flush o;
     Request.keep_alive_p req in

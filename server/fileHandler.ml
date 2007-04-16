@@ -50,16 +50,22 @@ let headers req o (path, st) =
           (content_type path)
           st.st_size
 
-let copy o (path, st) =
-  let i = open_in_bin path in
-  let max = 1024 in
-  let buf = String.create max in
-  (while 
-    let n = input i buf 0 max in
-    if n = 0 then false
-    else (output o buf 0 n; true) do()done;
-   close_in i)
-      
+let copy o' (path, st) =
+  flush o';
+  let o = descr_of_out_channel o' in
+  let i = openfile path [O_RDONLY] 0 in
+  let size = min st.st_size 8192 in
+  let buf = String.create size in
+  while
+    match read i buf 0 size with
+      0 -> false
+    | n -> let m = write o buf 0 n in
+           if m <> n then failwith "FileHandler.copy: not all bytes written";
+           true
+  do()
+  done;
+  close i
+ 
 let stat' path = 
   try stat path
   with Unix_error(ENOENT,_,_) -> raise Not_found
@@ -83,9 +89,12 @@ let root d =
        (Request.GET | Request.HEAD) ->
          let uri = check_uri (Request.uri req) in
          let path = Filename.concat d uri in
-         let r = find path (stat' path)
-         in (headers req o r;
-             if Request.meth req = Request.GET
-             then copy o r;
-             Status.Ok)
+         let r = find path (stat' path) in 
+         (try
+           headers req o r;
+           if Request.meth req = Request.GET
+           then copy o r;
+           Status.Ok
+         with
+           Sys_error "Broken pipe" -> raise Exit)
      | _ -> raise Not_implemented)

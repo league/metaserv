@@ -21,7 +21,7 @@ static%.meta:
 	mimencode </dev/urandom | dd bs=1K count=$* >$@
 
 clean:
-	rm -f $(junk) all run
+	rm -f $(junk) all run $(addsuffix .ml, $(scripts))
 
 reallyclean: clean
 	rm -f static*.meta

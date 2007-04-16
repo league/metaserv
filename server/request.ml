@@ -26,7 +26,8 @@ type req =
       uri: string;
       version: float;
       headers: string StringMap.t;
-      args: string StringMap.t }
+      args: string StringMap.t;
+      keep_alive: bool }
 
 let header req key = 
   try Some (StringMap.find (String.lowercase key) req.headers)
@@ -114,20 +115,30 @@ let parse_query q =
     Not_found -> (q, StringMap.empty)
 
 let read i = 
-  let s = get_line i 
-  in (if not(Str.string_match request_regex s 0)
-      then failwith("read_request: "^s);
-      let meth = String.uppercase (Str.matched_group 1 s) in
-      let query = Str.matched_group 2 s in
-      let version = float_of_string(Str.matched_group 3 s) in
-      let headers = read_headers StringMap.empty None i in
-      let (uri, args) = parse_query query in
-      { meth = meth_of_string meth;
-        uri = uri;
-        query = query;
-        version = version;
-        args = args;
-        headers = headers })
+  let s = get_line i in
+  if not(Str.string_match request_regex s 0)
+  then failwith("read_request: "^s);
+  let meth = String.uppercase (Str.matched_group 1 s) in
+  let query = Str.matched_group 2 s in
+  let version = float_of_string(Str.matched_group 3 s) in
+  let headers = read_headers StringMap.empty None i in
+  let conn = 
+    try Some (StringMap.find "connection" headers)
+    with Not_found -> None in
+  let (uri, args) = parse_query query in
+  { meth = meth_of_string meth;
+    uri = uri;
+    query = query;
+    version = version;
+    args = args;
+    headers = headers;
+    keep_alive = match (version > 1.0, conn) with
+      (* HTTP/1.1 stays alive unless Connection: close specified *)
+      (true, Some "close") -> false
+    | (true, _) -> true
+      (* HTTP/1.0 stays alive only if Connection: keep-alive specified *)
+    | (false, Some "keep-alive") -> true
+    | (false, _) -> false }
 
 let dump puts req =
   (Printf.kprintf puts
@@ -148,22 +159,7 @@ let query {query=x} = x
 let meth {meth=x} = x
 let meth' {meth=x} = string_of_meth x
 
-let conn req =
-  match header req "connection" with
-  | None -> None
-  | Some s -> Some (String.lowercase s)
-
-(* should optimize this; compute it once and store a flag *)
-
-let keep_alive_p req =
-  match (version req > 1.0, conn req) with
-    (* HTTP/1.1 stays alive unless Connection: close specified *)
-  | (true, Some "close") -> false
-  | (true, _) -> true
-    (* HTTP/1.0 stays alive only if Connection: keep-alive specified *)
-  | (false, Some "keep-alive") -> true  (* this breaks wget? *)
-  | (false, _) -> false
-
+let keep_alive_p req = req.keep_alive
 let keep_alive req =
-  if keep_alive_p req then "Keep-Alive"
+  if req.keep_alive then "Keep-Alive"
   else "close"

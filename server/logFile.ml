@@ -8,7 +8,6 @@ let with_locked log writer =
   Mutex.lock log.mutex;
   seek_out log.chan (out_channel_length log.chan);
   writer log.chan;
-(*  flush log.chan; *)
   Mutex.unlock log.mutex
 
 let tstamp writer =
@@ -60,6 +59,12 @@ let access log addr req status =
       (Request.query req)
       (match Request.header req "User-agent" with
         None -> "-" | Some ua -> ua) in
-
   with_locked log (tstamp put)
 
+let thread log flag =
+  let action = if flag then "created" else "terminated" in
+  let id = Thread.id (Thread.self()) in
+  let put ch = 
+ (* Printf.printf "%s %d\n%!" (if flag then "+++" else "---") id; *)
+    Printf.fprintf ch "t%d %s\n" id action in
+  with_locked log (tstamp put)
