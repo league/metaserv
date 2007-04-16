@@ -1,53 +1,31 @@
-<?pragma args y ?>
-<?^  (* this version has staging annotations removed *)
-  open Num
-  let zero = eq_num (Int 0)
-  let even n = zero (mod_num n (Int 2))
-  let square' x = (x */ x)
-  let square x = let y = x in square' y
-  let rec power' n x = 
-    if zero n then Int 1
-    else if even n then square(power' (n//Int 2) x)
-    else x */ (power' (n-/Int 1) x)
-
-  let num = string_of_num
-  let max = 64
+<?^open Num 
+  (* Wrap a string into a fixed-width block. *)
+  let width = 54
   let rec wrap puts s = 
-    if String.length s <= max then puts s
-    else (puts (Str.string_before s max);
-          puts "\n";
-          wrap puts (Str.string_after s max))
+    if String.length s <= width then puts s else
+      (puts (Str.string_before s width); puts "\n";
+       wrap puts (Str.string_after s width))
+  (* Staged implementation of power function. *)
+  let is_zero = eq_num (Int 0)
+  let square x = let z = x in z */ z
+  let rec power n x = 
+    if is_zero n then Int 1
+    else if is_zero (mod_num n (Int 2))
+      then square(power (n//Int 2) x)
+      else x */ (power (n -/ Int 1) x)
  ?>
-
-<?let x = match arg "x" with 
-          Some x -> num_of_string x
-        | None -> Int 2 
- ?>
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title><?=num x?>^<?=num y?></title>
-    <link href="/meta.css" rel="stylesheet" type="text/css" />
-  </head>
-<body>
-
-<h1>Staged power function: x^<?=num y?></h1>
-<p><form method="get">
-where x= <input name="x" type="text" value="<?=num x?>" size="24">
-<input type="submit">
-</form></p>
-
-<?let result = power' y x ?>
-<p>
-Result is:
-<pre>
-<? wrap puts (num result) ?>
-</p>
-
-<hr/>
-MetaOCaml <?=Sys.ocaml_version?>
-</body>
-</html>
+<?pragma args y ?>
+<?let y' = string_of_num y ?>
+<?let x' = match (arg "x") with
+     Some v -> v | None -> "2" ?>
+<?=preamble(x'^"^"^y')   (* Output begins here *) ?>
+<?=navbar("/power"^string_of_num y) ?>
+<form method='get'>
+  This page computes 
+  <input name='x' type='text' value='<?=x'?>' size='20'/>
+  <sup><?=y'?></sup>
+</form>
+<?let result = power y (num_of_string x')  (****) ?>
+<p>The result is: 
+<pre><?wrap puts (string_of_num result) ?></pre></p>
+<?=postamble?>

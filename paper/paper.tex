@@ -1,6 +1,6 @@
 \documentclass[preprint]{acm_proc_article-sp}
 \usepackage{ucs,textcomp,url,xspace,graphicx,color}
-\usepackage[leftno,lineno5]{lgrind}
+\usepackage[nolineno]{lgrind}
 \usepackage[bf]{caption2}
 \usepackage[numbers]{natbib}
 \usepackage[utf8]{inputenc}
@@ -40,8 +40,14 @@
   \captionof{listing}{\textbf{#1.} #2}%
   \label{lst:#1}%
   \lgrindfile{#1}}
+\newcommand{\mylstf}[2]{%
+  \begin{figure}[tbp!]%
+    \lgrindfile{#1}%
+    \captionof{listing}{\textbf{#1.} #2}%
+    \label{lst:#1}%
+  \end{figure}}
 
-\title{\MOC{} Server Pages:}
+\title{\MOC Server Pages:}
 \subtitle{Web Publishing as Staged Computation}
 \numberofauthors{1}
 \author{
@@ -49,10 +55,10 @@
   \affaddr{Long Island University · Computer Science}\\
   \affaddr{1 University Plaza · Brooklyn, NY 11201}\\
   \email{christopher.league@liu.edu}}
-\conferenceinfo{\MOC{} Workshop}{October 2004, Vancouver}
-\CopyrightYear{2004}
-\toappear{Submitted to the \MOC{} Workshop (Vancouver,
-  2004).}
+%\conferenceinfo{\MOC Workshop}{October 2004, Vancouver}
+%\CopyrightYear{2004}
+%\toappear{Submitted to the \MOC Workshop (Vancouver,
+%  2004).}
 
 \begin{document}
 \maketitle
@@ -66,10 +72,10 @@
   but not another.  Unfortunately, the various web
   programming languages target one stage only.  This is a
   tremendous opportunity for multi-stage languages in
-  general, and for \MOC{} in particular.
+  general, and for \MOC in particular.
   
-  We present the design of \MOC{} Server Pages.  Unlike
-  other languages in its genre, the embedded \MOC{} code
+  We present the design of \MOC Server Pages.  Unlike
+  other languages in its genre, the embedded \MOC code
   blocks may be annotated with staging information, so that
   the programmer may safely and precisely control which
   computation occurs in which stage.  A prototype web
@@ -83,7 +89,6 @@
 \category{H.3.5}{Information Storage and Retrieval}{Online Information
   Services}[Web-based services]
 
-\vfill
 \section{Motivation}
 \label{sec:intro}
 
@@ -266,17 +271,17 @@ passed from one stage to the next as strings, and the
 programmer must manage all the quoting and persistence
 issues by hand.
 
-We present ``\MOC{} server pages,'' a new domain-specific
+We present ``\MOC server pages,'' a new domain-specific
 language for web applications programming.  It leverages the
 staging annotations of \MOC~\cite{calcagno03meta,taha00metaml}
 to provide safe and precise control over the each stage of the
 computation.  We have implemented the system in two parts: our
-translator transforms the server page language into a \MOC{}
+translator transforms the server page language into a \MOC
 module, which then can be incorporated into our multi-threaded
-HTTP 1.1 server (also written in \MOC{}).  The scalability
+HTTP 1.1 server (also written in \MOC).  The scalability
 gained by staging certain applications is stunning.
 
-The next section sketches the design and translation of \MOC{}
+The next section sketches the design and translation of \MOC
 server pages, and section~\ref{sec:eg} includes some non-trivial
 examples.  The server implementation is decribed in
 section~\ref{sec:impl}.  Performance and scalability are
@@ -290,7 +295,7 @@ The general idea of a \emph{server page} language is that we
 \cd{\Mquote{}like this\Munquote}.
 PHP programmers are familiar with this syntax for embedding code, but
 in our case, the code itself is written in \MOC.  Here is your first
-\MOC{} server page:
+\MOC server page:
 \lgrindfile{first.meta}
 and its output:
 \begin{quote}
@@ -310,10 +315,13 @@ the code delimiter: \lgrindfile{pi.meta}
   ........ $\pi$ ÷ 008 is 0.3927
 \end{quote}
 In a departure from the standard OCaml syntax for \cd{printf}, the
-arguments are comma-delimited.
-%%
+arguments are comma-delimited.  This way, fewer parentheses are
+required when using the escape or lift operators on the arguments.
+
 One more kind of code delimiter is used for \emph{declarations;}
-these are evaluated during the publishing stage:
+these are lifted to the top of your program, and evaluated during
+the publishing stage:
+%%
 \lgrindfile{perm.meta}
 \begin{quote}
 Permissions on current directory are 0755
@@ -322,13 +330,40 @@ Permissions on current directory are 0755
 Once published, this output will never change!  The \cd{stat}
 call is executed only once, not on each request.
 
-To see how all this works, let's consider how a \MOC{} server
-page is translated into a proper \MOC{} program, to be executed
+\subsection{Review of staging annotations}
+
+\MOC augments OCaml with just three annotations, to indicate how
+programs are to be staged.  Brackets \cd{\Mbegincode like
+  these\Mendcode} construct future-stage computation.  The code within
+is not executed \emph{now,} but just returned, as a code value that can be
+run later.  
+
+Within brackets, the splice or escape operator \cd{\Msplice e} may
+appear.  It interrupts the code construction to execute the expression
+\cd{e} (in the current stage) and splice its result into the
+future-stage computation.  Thus, \cd{e} is required to return code of
+the proper type.
+
+To compute and splice in a regular (non-code) value, we define a
+function \cd{{\KWfont let} lift x = \Mbegincode x\Mendcode}; this
+takes any value and turns it into code.  We use it like this:
+\cd{\Mbegincode 2 * \Msplice(lift(3+4))\Mendcode} The addition is
+performed immediately (because it is escaped), and the result is
+spliced into the code, producing \cd{\Mbegincode 2 * 7\Mendcode}.
+
+Finally, there is an operator \Mrun{} to execute constructed code.
+Applying it to the example above, \cd{\Mrun{} \Mbegincode 2 * 7
+  \Mendcode} produces \cd{14}.
+
+
+\subsection{Translation to \MOC}
+To see how all this works, let's consider how a \MOC server
+page is translated into a proper \MOC program, to be executed
 at publish time.  Since the program is executed before any
 browser has requested the page, it cannot directly return or
 output HTML.  Instead, it will construct and return a \cd{code}
 object which is subsequently run on each request (serve stage).
-Listing~\ref{lst:trans.meta} shows a sample \MOC{} server page,
+Listing~\ref{lst:trans.meta} shows a sample \MOC server page,
 and listing~\ref{lst:trans.ml} contains its translation.
 
 \mylst{trans.meta}{This file demonstrates the various
@@ -341,16 +376,21 @@ and listing~\ref{lst:trans.ml} contains its translation.
 
 Declaration blocks have been lifted to the top; any side effects
 contained there are executed when the page is published.  The
-constructed code begins on line~{???line:page} of
-listing~\ref{lst:trans.ml}.  It is a function of two arguments:
-\cd{req} encapsulates the HTTP request, including the headers
-and query arguments; \cd{puts} is a function with type
-\cd{string\to unit}; it transmits text across the network to the
-visitor's browser.  \cd{arg} looks up an
-argument in the query string of the request; its type is
-\cd{string\to string option}.  These are all \emph{serve} (second)
+constructed code begins with the \cd{{\KWfont let} page} line in
+listing~\ref{lst:trans.ml}.  
+
+The \cd{a b c} represent publish-stage arguments (the names are
+specified in the \cd{pragma}), whereas \cd{req} and \cd{puts} are
+(fixed) serve-stage arguments.  \cd{req} encapsulates the HTTP request
+details, including the headers and query arguments.  \cd{puts} is a
+function, provided by the server, to 
+transmit text across the network to the user's browser.  \cd{arg} is
+then defined to look up an argument in the query string of the
+request; its type is \cd{string\to string option}.
+
+These are all \emph{serve} (second)
 stage values.  It makes no sense to access them in the
-\emph{publish} (first) stage, and indeed the \MOC{} type system
+\emph{publish} (first) stage, and indeed the \MOC type system
 prevents this.
 
 A few finer points to note: the translator discards newlines that
@@ -358,28 +398,29 @@ immediately follow code blocks (otherwise,
 listing~\ref{lst:trans.ml} would be dotted with %
 \cd{puts}~\verb+"\n"+ statements).  It automatically follows
 code blocks with either a semi-colon or the {\KWfont in}
-keyword, as needed.
+keyword, as required.
 
-Now that we understand how the server page is assembled into a
-staged program, the effects of adding \MOC{} staging operators
-to our pages should be predictable.  Below is a reformulation of
-the permissions example, using escape \Msplice{} and \cd{lift} to
-ensure that \cd{stat} is called only once.
-\lgrindfile{perm2.meta}
-%%
-Still, the \cd{printf} conversion is performed at serve time, so
-maybe it is best to pre-generate that as well:
-\lgrindfile{perm3.meta}
+\subsection{Staged code blocks}
+Now that we understand how the server page is assembled into a staged
+program, the effects of adding \MOC staging operators to our pages
+should be predictable.  Below is a reformulation of the permissions
+example, using escape \Msplice{} and \cd{lift} to ensure that
+\cd{stat} is called only once.%
+\lgrindfile{perm2.meta}%
+Still, the \cd{printf} conversion is performed at serve time, so maybe
+it is best to pre-generate that as well:%
+\lgrindfile{perm3.meta}%
 Now, all that remains to execute at serve time is %
-\cd{puts "0755"}.  Finally it is possible to splice in
-additional code at publish time, such as in this count-down
-example:
-\lgrindfile{count.meta}
+\cd{puts "0755"}.  Finally it is possible to splice in serve-stage
+parameters at publish time, such as in this count-down example:%
+\lgrindfile{count.meta}%
 It removes the loop overhead by expanding to a sequence of 99
 \cd{puts} statements.
 
 These tiny examples illustrate some of the common uses of the
-escape operator, for which we developed syntactic sugar:
+escape operator, for which we developed syntactic sugar.  The first
+set of code blocks we define use the tilde character to indicate that
+some part of the enclosed quote is escaped:
 
 \begin{tabular}{l@{\quad$\leadsto$\quad}l}
 \cd{\Mquote{\Mtilde} a \Munquote} &
@@ -400,7 +441,29 @@ where the \cd{a} has type \cd{unit code}; \cd{b} has type
 \cd{string code}; and the types of \cd{d,e,f} match the
 format string.
 
-One last feature in the design of \MOC{} server pages is the ability
+It is also common to use the escape with \cd{lift}; this means we are
+computing a value immediately and splicing it into the code.  For
+these blocks, we use the \Mbang{} character:
+
+\begin{tabular}{{l@{\quad$\leadsto$\quad}l}}
+\cd{\Mquote{\Mbang} a \Munquote} &
+\cd{\Mquote{} \Msplice(lift( a )) \Munquote}
+\\
+\cd{\Mquote{\Mbang=} b \Munquote} &
+\cd{\Mquote{=} \Msplice(lift( b )) \Munquote}
+\\
+\cd{\Mquote{\Mbang}let x = c \Munquote} &
+\cd{\Mquote{} let x = \Msplice(lift( c )) \Munquote}
+\\
+\cd{\Mquote{\Mbang}\id{"fmt"} d, e\Munquote} &
+\cd{\Mquote{}\id{"fmt"} \Msplice(lift(d)), \Msplice(lift(e))\Munquote}
+\\
+\end{tabular}
+
+We will see examples of most of these blocks in section~\ref{sec:eg}.
+
+\subsection{Publish-stage arguments}
+One last feature in the design of \MOC server pages is the ability
 to take publish-stage arguments.  The parameter names are specified to
 the translator in a \emph{pragma} declaration, which can appear
 anywhere in the code:
@@ -411,7 +474,7 @@ Now the code can be instantiated with early parameters in countless
 ways.  For example, requesting the URI \id{/longcount} could print a
 count-down from 99, while \id{/shortcount} starts at 9 instead.  Both
 are generated from the same server page.  Mapping from URIs to
-instantiated \MOC{} code is, for now, an implementation detail
+instantiated \MOC code is, for now, an implementation detail
 (see section~\ref{sec:impl}).
 
 \section{Examples}
@@ -427,28 +490,13 @@ hierarchical list of page titles and links.  The following bindings are
 available site-wide:
 
 \lgrindfile{navspec-sig.ml}
-
-The first function generates the standard XHTML header given the
-title, while the second function generates the navigation bar given
-the URI denoting the current page.  These can be called at either
-stage.  Naturally, if the title includes a dynamic argument, then
-\cd{preamble} will be delayed until the serve stage.
+%%
+The functions above may be invoked at any stage.  Naturally, if the
+page title includes a dynamic argument, then \cd{preamble} will have
+to be delayed until theh serve stage.
 
 \subsection{The ubiquitous power function}
 \label{sec:eg:power}
-
-Judging from its prevalence in the literature, we are certain that
-millions of grateful users would subscribe to an online service
-capable of computing the \emph{power} function!  The screen shot in
-figure~\ref{fig:power127} illustrates how it works.  The navigation
-bar shows the exponents for which code has been
-pre-generated.\footnote{In the current implementation, it is not
-  possible for the user to request other exponents once the server is
-  running.  See section~\ref{sec:impl} for an explanation.}  After
-selecting the exponent, the user types the base into the form and
-presses return.  The result is computed using OCaml's
-arbitrary-precision \cd{Num} module.  The implementation of this
-service appears in listing~\ref{lst:power.meta}.
 
 \screenshot{power127}{Web browser displaying the result of
   7\textsuperscript{127}.  The URI \texttt{/power127} maps to code
@@ -460,22 +508,35 @@ service appears in listing~\ref{lst:power.meta}.
   web service.  The exponent \cd{y} is an early (publish stage)
   argument; but the base \cd{x} is late (serve stage).}
 
-The first function wraps a string into a fixed width block.  The power
-function itself begins on line~{???line:power-fun}.  No output should
-occur until the preamble is generated on
-line~{???line:power-preamble}.  The user's input is translated to a
-number relatively late (line~{???line:power-num}); if there is a
-problem here, the navigation bar and form will have already been
-output before the exception message.
+Judging from its prevalence in the literature, we are certain that
+millions of grateful users would subscribe to an online service
+capable of computing the \emph{power} function!  The screen shot in
+figure~\ref{fig:power127} illustrates how it works.  The navigation
+bar shows the exponents for which code has been
+pre-generated.\footnote{In the current implementation, it is not
+  possible for the user to request other exponents once the server is
+  running.  See section~\ref{sec:impl} for an explanation.}  After
+selecting the exponent, the user types the base into the form and
+presses return.  The result is computed using OCaml's
+arbitrary-precision \cd{Num} module.  The complete, documented script
+appears in listing~\ref{lst:power.meta}.
+
+The user's input is converted to a number relatively late in the
+script.  If \cd{num\_of\_string} generates an exception (perhaps
+because the user typed non-numeric text into the box), the navigation
+bar and form will have already been output before the error message
+appears.
 
 In section~\ref{sec:perf}, we will measure the impact of staging on
-the scalability of this service.  To derive the un-staged version for
-comparison, we simply remove all the brackets and escapes from the
-code in listing~\ref{lst:power.meta}.
+the scalability of this application.  To derive the un-staged version
+for comparison, we simply convert \cd{\Mquote{\Mtilde}} and
+\cd{\Mquote{!}} blocks into plain \cd{\Mquote{}} and remove all other
+brackets and escapes from the code in listing~\ref{lst:power.meta}.
 
 \subsection{Directory browsing}
 \label{sec:eg:browse}
 
+Now we consider a more substantial example.
 Many web servers can be configured to permit clients to browse
 directories.  The web server generates, on the fly, an HTML page
 containing the names and attributes of (and hyperlinks to) all
@@ -483,49 +544,71 @@ the files in the directory.  In Apache, the
 \texttt{mod\_autoindex} module provides this feature.
 %%
 ViewCVS\footnote{\url{http://viewcvs.sourceforge.net/}} is a more
-complex example of the same idea. It is a Python program that sits on
-the web server and allows remote users to browse a CVS repository with
-a standard web browser.
+complex example of the same idea; it allows remote users to browse a
+CVS repository with a standard web browser.
 
 This kind of service can be fairly intense; one HTTP request is likely
 to generate dozens of system calls and disk accesses.  If the
 directory is viewed more often that it is changed, then it makes sense
 to cache or pre-generate the pages.  Although it is simple enough to
 write a script to generate directory pages off-line, what if we also
-want dynamic user-controlled behavior, such as sorting and filtering?
+want dynamic behavior, such as user-controlled sorting and filtering?
 
-
-We implemented
-contribution to the genre not only lists files in a given
-directory, but displays their MD5 checksums, renders their sizes in
-human-readable form (`1.2M' rather than `1194822'), and colorizes their
-names based on their extension or kind.  At serve time, the user may
-specify a regular expression for filtering, and one of 5 criteria for
-sorting.  The screen shot in figure~\ref{fig:server-dir} shows the
-result of browsing the source directory of the server.
+Our implementation not only lists files in a given directory, but
+displays their MD5 checksums, renders their sizes in human-readable
+form (`1.2M' rather than `1194822'), and colors their names based on
+their extension or file type.  We also support dynamic (serve time)
+customization: the user may specify a regular expression for
+filtering, and select one of 5 criteria for sorting.  The screen shot
+in figure~\ref{fig:server-dir} shows the result of browsing the source
+directory of the server itself.
 
 \screenshot{server-dir}{Browsing the server source code directory.
   File names are colored according to their \emph{kind,} which is
   computed from the extension and the file type.  See also
   listing~\ref{lst:dir.meta}.}
 
-This service is a bit like the conference calendar outlined in
-section~\ref{sec:intro}.  Everything that can be pre-generated
-\emph{is.}  At serve time, we just compile the regular expression,
-then filter and sort the data (unless the default order was chosen).
-The text of each row is ready and waiting.  At serve time, the files
-need not be opened or even \id{stat}ted.  The crux of the
-implementation is shown in listing~\ref{lst:dir.meta}:
+This service is a bit like the conference calendar proposed in
+section~\ref{sec:intro}.  We pre-generate \emph{everything} that does
+not rely on serve-time parameters.  The stats and MD5 sums of the
+files are collected \emph{once,} in the publish stage.  The text of
+each possible row is prepared in advance.  Once the user's request is
+made, we filter and sort the list, then output the pre-generated text
+of each remaining row.  The files need not be opened or even
+\id{stat(2)}ed while the user is waiting.  Listing~\ref{lst:dir.meta}
+contains the complete script, with documentation.
 
 \mylst{dir.meta}{This implements the directory browser shown in
   figure~\ref{fig:server-dir}.} 
 
-In the first stage, this reads all the filenames in the directory and
-sorts them by name.  Then it looks up the fileinfo, computes the MD5
-sum, and prepares the text of each row.  Finally, it generates code
-that matches the filename against a (future-stage) regular expression,
-and includes it in a list only if it matches.  In the next stage, this
-list will be constructed and sorted (if necessary).
+Much of the above code is unaffected by staging; functions like
+\cd{sort\_by}, \cd{human\_size}, and even \cd{fileinfo} are oblivious
+to the stage in which they are run.  Therefore, the staged code comprises a
+relatively small portion of the entire program: mainly the function
+\cd{list\_files} and its call site.
+
+To understand the staging technique used here, it may help to examine
+the output of just the first stage of computation.  The following
+listing is cleaned up from the \MOC pretty-printer, with references to
+compiled values resolved in-place.
+
+\lgrindfile{dir-out.ml}
+
+The \cd{list} is formed by testing filenames (in reverse alphabetical
+order) against the compiled regular expression \cd{rc}, including only
+those that match.  The file info record for each file has already
+been prepared and appears in the code as a value.
+
+Because the file information is compiled into the code, any changes to
+the file system following the first stage of execution will \emph{not}
+automatically appear on the web interface.  To see the latest files,
+we need to re-run stage one.  This cannot be done from within the \MOC
+server page itself, but we have programmed the server to regenerate
+pages whenever the `\cd{!}' character is appended to the URI.  The
+directory browser pages feature a `Regenerate' button at the bottom
+which will bring them up to date by running the publish stage code
+again, and caching the result for subsequent requests.
+
 
 
 \subsection{Server introspection}
@@ -546,7 +629,7 @@ navigation bar.
 \label{sec:impl}
 
 
-Currently, the \MOC{} implementation is not capable of reading
+Currently, the \MOC implementation is not capable of reading
 and writing \cd{code} values to a file.  This means that
 generated server pages (after the publish stage) must already be
 in the server memory when it starts.  This is an unfortunate
@@ -567,15 +650,13 @@ found).
 
 \section{Performance}
 \label{sec:perf}
-
 One of the benefits of a \emph{compiled} implementation of staged
-programming---even byte-code compiled, like \MOC{}---is that it
-permits meaningful measurement.  Here, we describe the performance
+programming---even byte-code compiled, like \MOC---is that it permits
+meaningful measurement.  Here, we describe the performance
 characteristics of the prototype, focusing in particular on the
-benefits of staging the computations performed by various web
-services.
+benefits of staging various web services.
 
-The single most important datum for evaluating web server performance
+The single most important metric for evaluating web server performance
 is \textit{throughput:} the number of requests successfully answered
 per unit of time.  To establish a baseline, we first tested the
 throughput of the Caml prototype HTTP server delivering chunks of
@@ -593,16 +674,15 @@ from 8 threads simultaneously for 30 seconds.\footnote{\texttt{ab}
 \gnuplot{static}{Throughput for static pages.  Note the logarithmic
   scale on the \textit x axis.}
 
-The baseline results are shown in figure~\ref{fig:static}.  The
-series marked “Caml file” was served by the \texttt{FileHandler}
-module.  For the “Caml code” series, the same files were treated
-as \MOC{} Server Pages, and thus turned into one big
-\texttt{puts} statement, executed by the \texttt{CodeHandler}
-module.  The only reason the code wins in the beginning is that
-all code pages are already loaded into the server’s memory on
-startup (to work around a limitation of the prototype---see
-sections~\ref{sec:impl} and~\ref{sec:future}), but the
-\texttt{FileHandler} must read files from disk each time.
+The baseline results are shown in figure~\ref{fig:static}.  The series
+marked “Caml file” was served by the \texttt{FileHandler} module.  For
+the “Caml code” series, the same files were treated as \MOC Server
+Pages, and thus turned into one big \texttt{puts} statement, to be
+executed by the \texttt{CodeHandler}.  The only reason the code
+wins in the beginning is that all code pages are already loaded into
+the server’s memory on startup (to work around a limitation of the
+prototype---see section~\ref{sec:impl}), but the \texttt{FileHandler}
+must read files from disk each time.
 
 Figure~\ref{fig:static} includes comparable results for PHP, the
 popular server-side computation system.\footnote{libphp4.so
@@ -615,7 +695,7 @@ We omitted the results for Apache serving static files, because they
 are way off scale: Apache handled an astounding 4,438 hits per second
 for the 1k file, and 1,813 for the 64k file.  Apache is heavily
 optimized for serving static files: apart from caching, it uses the
-special \texttt{sendfile()} system call for zero-copy file transfer
+special \texttt{sendfile(2)} system call for zero-copy file transfer
 from kernel space~\cite{tranter03sendfile}.  Although our prototype is
 no match for Apache on static files, the overhead for interpreting
 code seems no worse than that of PHP.
@@ -636,85 +716,127 @@ everything else.\footnote{The final result,
   server page computes 2 to the given power
   (2\textsuperscript{127}, 2\textsuperscript{255}, etc.)}
 
-Finally, we look at the performance of staged and unstaged
-directory browsing; see figure~\ref{fig:browse}.  For this task,
-we created directories containing a fixed number of files with
-random data.  The average file size was 32k.  The \emph{x}~axis
-shows the number of files in the directory.  
+Finally, we look at the performance of staged and unstaged directory
+browsing; see figure~\ref{fig:browse}.  For this task, we created
+directories containing a fixed number of files with random data.  The
+average file size was 32k.  The \emph{x}~axis shows the number of
+files in the directory.  Besides the staging factor, two
+implementation languages are compared: we coded the same functionality
+in PHP.  The `staged PHP' version must be run first from the command
+line; this outputs another PHP script which is then run by the server.
 
 \gnuplot{browse}{Staged versus unstaged directory browsing, in \MOC
   and PHP.}
 
-Directory browsing was the most realistic of the examples, and
-the benefit of staging is crystal clear.  In browsing a
-directory of 64 files, the unstaged program barely answered 18
-requests per second.  It would certainly succumb to the Slashdot
-effect!
+Directory browsing was the most realistic of the examples, and the
+benefit of staging is crystal clear.  In browsing a directory of 64
+files, the unstaged programs barely answered 18 requests per second.
+They would certainly succumb to the Slashdot effect!
 
-This is exactly the kind of page where the real work needs to be
-done in advance.  But that doesn't mean it needs to be a
-completely static page, either.  By carefully staging the
-computation, we gathered the file information in advance, yet
-still filtered and sorted the results on demand.  The staged
-directory browser answered more than 550 requests (for the same
-64-file directory) per second.
+This is exactly the kind of page where the real work needs to be done
+in advance.  But that doesn't mean it needs to be a completely static
+page, either.  By carefully staging the computation, we gathered the
+file information in advance, yet still filtered and sorted the results
+on demand.  The staged \MOC directory browser answered more than 550
+requests (for the same 64-file directory) per second.
 
+The degradation in performance of the staged PHP version is most
+likely due to the fact that the stage two script must be \emph{parsed}
+on each request; the size of the script is proportional to the number
+of files in the directory.  With \MOC, the code size is also
+proportional to the number of files, but the values are already in
+memory.  
 
-\section{Related work}
+\section{Related and future work}
 \label{sec:related}
 
-We already referenced the other systems for server-side
-computation, but we would be remiss without mentioning
-XCaml~\cite{baretta04xcaml}\ldots
+Most of the \emph{server page} systems embed programs within web pages
+using similar techniques; exemplars include JSP~\cite{sun-jsp},
+ASP~\cite{microsoft-asp}, PHP~\cite{bakken04php},
+MSP~\cite{elsman03web} (based on SML), and XCaml~\cite{baretta04xcaml}
+(based on OCaml).  Ours appears to be the first such language with
+explicit support for \emph{staging} the computation.  We inherited the
+staging annotations of \MOC~\cite{calcagno03meta} and designed several
+new kinds of code blocks based on them.
 
-For client-side computation, besides JavaScript and Java
-applets, there is the work by \citet{rouaix96web} on Caml
-applets.  It may be possible to update his MMM browser for use
-with \MOC{}, but we would prefer to use a plug-in approach that
-works with mainstream browsers\ldots
+Unlike more ad-hoc staging methods, \MOC server pages guarantee the
+type safety for generated code up front.  We do not, however, make any
+guarantees about the validity of the generated HTML.
+\citet{elsman04typing}, \citet{wallace99haxml}, \citet{hosoya03xduce},
+and \citet{ohl04xhtml} leverage ML-like type systems to validate
+(X)HTML generators.  Integrating their ideas into \MOC server pages
+may permit validation of the generated document as well.
 
-\citet{elsman04typing}, \citet{wallace99haxml},
-\citet{hosoya03xduce}, and \citet{ohl04xhtml} validate HTML code
-in functional languages.  We could probably use OCaml's type
-system to greater advantage this way, but it may require
-validating the text parts of the server page with a more
-mainstream SGML or XML validator.
+Our server page language is defined by translation into \MOC.
+Unfortunately, this means that error messages refer to the translated
+code, not the original, embedded code.  Camlp4 is a flexible
+pre-processor capable of modifying the concrete syntax of
+OCaml~\cite{rauglaudre03camlp4} while maintaining usable error
+messages.  Formulating the server page syntax with Camlp4 would likely
+be an improvement over the current, ad-hoc translator.
 
-\section{Future directions}
-\label{sec:future}
+In motivating \MOC server pages, we observed that the computation
+associated with a web page naturally decomposed into three stages:
+publish, serve, and display.  Our language, however, was designed to
+support just the first two stages.  It is straightforward to imagine
+an extension to the third stage (since \MOC itself has no constraints
+on the number of stages) but the implementation may be tricky.  First,
+we must overcome the process boundary between server and client.  We
+currently have no way to export \MOC code blocks from the program that
+created them into another program.  (On the server, we circumvented
+this limitation by running the publish and serve stages within one
+process.)  Next, we need a browser capable of loading and executing
+\MOC code.  \citet{rouaix96web} demonstrated a browser called MMM,
+written in Caml, that could run applets loaded as Caml byte-code.  It
+may be possible to update his browser for use with \MOC, but
+developing a plug-in that works with conventional browsers would be
+preferable.
 
-  
- This really needs to be a module for a real server, such
-  as Apache or AOLserver.
-  
- Need more serious case studies, where one logical service
-  is implemented across a series of pages.
-  
- Need to address the major implementation shortcoming, of
-  loading all the generated pages into memory on startup.
-  
-  Marshalling closures works partly in OCaml, but only if they
-  are part of the ``original program''---that's probably too
-  limiting for our case.  The abstract syntax representation of
-  code values could be dumped to a file, but the `persistent'
-  functions it refers to will need to be stored somewhere\ldots
 
+One of the major shortcomings of our implementation is that all the
+pages must be loaded into memory when the server starts.  Ideally, a
+separate tool would translate the server page source directly to
+byte-code, stored in an image on disk.  Then the server would map URIs
+to these byte-code files, loading and executing them on demand.
+Whenever we want to re-run the publish stage, we could do so
+independently of the server.  Two limitations of the \MOC
+implementation itself appear to stand in the way of this ideal.
+First, code values cannot at present be written to or read from files.
+Second, code values remain polymorphic until they are \emph{run} with
+the \Mrun{} operator.  Therefore, they cannot be passed to functions
+or stored in data structures (at least until OCaml supports rank-2
+polymorphism).
+
+More substantial applications are needed to demonstrate both the
+performance gains and the expressiveness of this approach.  A web
+service that uses a database and is spread over several pages would be
+more realistic.  \citet{queinnec00influence} and
+\citet{graunke01programming} use features of functional languages to
+express user interactions more naturally, given the stateless nature
+of HTTP.  We suspect that these techniques are orthogonal to the
+staging features provided by \MOC.
+
+Finally, although our HTTP implementation stands up to the Apache
+benchmarking tool, it is not likely to win any awards for reliability
+or flexibility.  Our ideas would likely have greater impact if they
+could be implemented as a module for a real server such as Apache or
+AOLserver.
 
 
 \section{Conclusion}
 \label{sec:concl}
 
-Web publishing is an important application domain that is quite
+Web publishing is an important application domain that is
 naturally staged.  Web programmers write staged programs every
-day, but they do it the old-fashioned way: one script generates
+day, but they do it the old-fashioned way: one script outputs
 another as a string.  This is a tremendous opportunity for
 multi-stage languages.
 
-We presented the design of \MOC{} server pages, a new
+We presented the design of \MOC server pages, a new
 domain-specific language for web applications programming.  It
-leverages the staging annotations of \MOC{} to provide safe and
+leverages the staging annotations of \MOC to provide safe and
 precise control over the each stage of the computation.
-
+%%
 We have shown the substantial benefits of this approach in terms
 of performance and expressiveness, although the prototype
 implementation suffers some limitations because it is unable to

@@ -16,6 +16,8 @@ s:\?\\>:\\Munquote:g
 s:\\-\\!\\>:\\ensuremath\\rightarrow:g
 s:\\<=:\\codeleq:g
 s:\\-:\\codeminus{}:g
+s:\\{:\\codelb{}:g
+s:\\}:\\coderb{}:g
 s:\\<:\\textlt{}:g
 s:\\>:\\textgt{}:g
 

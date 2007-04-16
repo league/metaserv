@@ -50,7 +50,7 @@ all: default $(addprefix bench/d., $(dir_sizes))
 run: all
 	$(OCAMLCMD) scripts/run
 daemon: all
-	nohup $(OCAMLCMD) scripts/run &
+	$(NOHUP) $(OCAMLCMD) scripts/run &
 
 interact: default
 	$(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
@@ -188,7 +188,7 @@ screens := $(addprefix paper/, confcal power127 server-dir gc)
 screens_png := $(addsuffix .png, $(screens))
 screens_eps := $(addsuffix .eps, $(screens))
 
-listings := trans.ml navspec-sig.ml codeHandler.mli \
+listings := trans.ml navspec-sig.ml dir-out.ml codeHandler.mli \
     $(addsuffix .meta, first pi perm perm2 perm3 count power dir gc trans)
 listings_tex := $(addprefix paper/, $(addsuffix .tex, $(listings)))
 
@@ -235,7 +235,7 @@ scripts/run: Makefile $(ml_files) scripts/run_
 	done
 	for d in $(dir_sizes); do \
 	  echo "\"/browse$$d\", (fun () -> .! Dir.page \"\" \"bench/d.$$d\");" >>$@; \
-	  echo "\"/unbrowse$$d\", (fun () -> .! DirUn.page \"bench/d.$$d\");" >>$@; \
+	  echo "\"/unbrowse$$d\", (fun () -> .! DirUn.page \"\" \"bench/d.$$d\");" >>$@; \
 	done
 	echo "\"/browse\", (fun () -> .! Dir.page \"/browse\" \".\");" >>$@
 	for d in $(dir_pages); do \
