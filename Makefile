@@ -62,9 +62,15 @@ pdf: paper/paper.pdf
 ps: paper/paper.ps
 dvi: paper/paper.dvi
 
+talk_figs := dot dot2 dot3 dot4 dotst first prn decl trans trans2
+talk_figs_pdf := $(addprefix talk/, $(addsuffix .pdf, $(talk_figs)))
+talk: $(talk_figs_pdf)
+
 tex_junk = aux bbl blg log out waux
 texclean:
 	$(RM) $(addprefix paper/paper., $(tex_junk))
+	$(RM) $(addprefix talk/skeleton., $(tex_junk))
+	$(RM) talk/tmp.tex
 
 mostlyclean: texclean
 	find . -name '*~' | xargs $(RM)
@@ -75,7 +81,7 @@ clean: mostlyclean
 	$(RM) metac/metac.*-* server/*.cm? $(staged_php)
 	$(RM) scripts/run scripts/trans.ml $(ml_files)
 	$(RM) $(screens_png) $(screens_eps) $(listings_tex)
-	$(RM) $(figs_tex) $(figs_eps) $(figs_pdf)
+	$(RM) $(figs_tex) $(figs_eps) $(figs_pdf) $(talk_figs_pdf)
 	$(RM) $(addprefix paper/paper., dvi wdvi ps 2ps)
 	$(RM) -r paper/auto paper/_whizzy* paper/._whizzy*
 
@@ -142,21 +148,33 @@ paper/%.eps paper/%.tex: bench/%.gp
 %.ps: %.dvi
 	cd $(dir $<) && \
 	$(TEXENV) $(DVIPS) -o $(notdir $@) $(notdir $<)
+%.eps: %.dvi
+	cd $(dir $<) && \
+	$(TEXENV) $(DVIPS) -E -o $(notdir $@) $(notdir $<)
 
 # code -> LaTeX
 LGRIND_CFG := paper/lgrindef paper/lgrindsub
+LGRIND_OCAML = $(LGRIND) -i -lOCaml $< | $(LSED) >$@
 paper/%.ml.tex: scripts/%.ml $(LGRIND_CFG)
-	$(LGRIND) -i -lOCaml $< | $(LSED) >$@
-
+	$(LGRIND_OCAML)
 paper/%.mli.tex: server/%.mli $(LGRIND_CFG)
-	$(LGRIND) -i -lOCaml $< | $(LSED) >$@
-
+	$(LGRIND_OCAML)
+talk/%.lg: talk/%.ml $(LGRIND_CFG)
+	$(LGRIND_OCAML)
+talk/%.lg: talk/%.meta $(LGRIND_CFG)
+	(echo '?>RM'; cat $<; echo 'RM<?') \
+	  | $(LGRIND) -i -lMeta - | $(LSED) >$@
 paper/%.meta.tex: scripts/%.meta $(LGRIND_CFG)
 	(echo '?>RM'; cat $<; echo 'RM<?') \
 	  | $(LGRIND) -i -lMeta - | $(LSED) >$@
 
-paper/%.tex: paper/%.ltx $(LGRIND_CFG)
-	$(LGRIND) -e -a -lOCaml $< | $(LSED) >$@
+talk/%.dvi: talk/%.lg talk/skeleton.tex paper/fonts.tex
+	cp $< talk/tmp.tex
+	cd talk && $(TEXENV) $(TEXI2DVI) skeleton.tex
+	mv talk/skeleton.dvi $@
+
+#paper/%.tex: paper/%.ltx $(LGRIND_CFG)
+#	$(LGRIND) -e -a -lOCaml $< | $(LSED) >$@
 
 ###################################################################
 ###  Dependencies
@@ -205,7 +223,7 @@ plain_pages := /gc/Gc /Index /about/About /uname/Uname \
   /perm2/Perm2 /perm3/Perm3 /count/Count /checkme/Checkme
 dir_pages := metac paper scripts server bench images
 
-script_names := dir dirUn power powerUn count2 \
+script_names := dir dirUn dirNoMd5 dirUnNoMd5 power powerUn count2 \
   $(addprefix static, $(static_sizes)) \
   $(notdir $(shell echo $(plain_pages) | tr '[A-Z]' '[a-z]'))
 
@@ -236,6 +254,8 @@ scripts/run: Makefile $(ml_files) scripts/run_
 	for d in $(dir_sizes); do \
 	  echo "\"/browse$$d\", (fun () -> .! Dir.page \"\" \"bench/d.$$d\");" >>$@; \
 	  echo "\"/unbrowse$$d\", (fun () -> .! DirUn.page \"\" \"bench/d.$$d\");" >>$@; \
+	  echo "\"/nobrowse$$d\", (fun () -> .! DirNoMd5.page \"\" \"bench/d.$$d\");" >>$@; \
+	  echo "\"/nounbrowse$$d\", (fun () -> .! DirUnNoMd5.page \"\" \"bench/d.$$d\");" >>$@; \
 	done
 	echo "\"/browse\", (fun () -> .! Dir.page \"/browse\" \".\");" >>$@
 	for d in $(dir_pages); do \
