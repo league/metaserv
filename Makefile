@@ -1,5 +1,5 @@
 include Makefile.rules
-subdirs=server metac scripts paper
+subdirs=server metac scripts bench paper
 mlflags+=-I server
 
 default:
@@ -23,7 +23,7 @@ reallyclean: clean
 
 method=camlcode
 static-bench:
-	for n in $(sizes); do \
+	for n in $(static-sizes); do \
 	  bench/static-overhead $(method) $$n 2>&1 \
 	    | tee bench/static.$(method).$$n; \
 	done

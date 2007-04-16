@@ -1,5 +1,5 @@
 \documentclass{acm_proc_article-sp}
-\usepackage{ucs,textcomp,url}
+\usepackage{ucs,textcomp,url,graphicx}
 \usepackage[numbers]{natbib}
 \usepackage[utf8]{inputenc}
 \ifx\pdfoutput\undefined\else
@@ -47,6 +47,26 @@ opportunity for dynamic code to be executed at any of these stages.
 Give an example: conference calendar.  
 
 \section{Performance}
+
+\begin{figure}[htbp]
+  \input{../bench/power}
+  \caption{Staged vs. unstaged power function}
+  \label{fig:power}
+\end{figure}
+
+\begin{figure}[htbp]
+  \input{../bench/static}
+  \caption{Throughput for static pages}
+  \label{fig:static}
+\end{figure}
+
+
+It is an application area that is naturally staged.  First, content is
+prepared and placed on the server (publishing stage).  Next, a user's
+browser requests the content (retrieval stage).  Finally, the browser
+displays the content on the client (display stage).  There is an
+opportunity for dynamic code to be executed at any of these stages.
+
 
 \section{Related work}
 

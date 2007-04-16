@@ -106,7 +106,6 @@ let parse_query q =
         let key = Str.string_before arg j in
         let v = Str.string_after arg (j+1) in
         let v = Str.global_substitute url_coding_regex url_subst v in
-        Printf.printf "%s -> %s\n%!" key v;
         StringMap.add key v map
       with
         Not_found -> map in

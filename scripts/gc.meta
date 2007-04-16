@@ -14,7 +14,6 @@ Current time is <?=TimeStamp.now()?><br/>
 Server up since <?~=lift(TimeStamp.now())?><br/>
 <?~=lift(let i = Unix.open_process_in "uname -a" in
          let uname = input_line i in
-         Printf.printf "UNAME\n%!";
          let _ = Unix.close_process_in i in
          uname)?>
 <pre>

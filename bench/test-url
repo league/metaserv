@@ -1,0 +1,12 @@
+#! /bin/sh
+
+set -m
+make -C.. run &
+sleep 4
+
+echo '=====================================' $1
+ab -k -t 30 -c 8 http://localhost:8000/$1
+
+echo Finished.. trying to kill server...
+sleep 2
+kill -INT %%

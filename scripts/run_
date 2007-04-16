@@ -1,33 +1,5 @@
-let code_map = 
-  List.fold_right 
-    (fun(uri,scr) map->StringMap.add uri scr map) [
-
-(*
-"/browse",   .! Dir.page ".";
-"/server/",  .! Dir.page "server";
-"/scripts/", .! Dir.page "scripts";
-"/paper/",   .! Dir.page "paper";
-"/metac/",   .! Dir.page "metac";
-"/images/",  .! Dir.page "images";
- *)
-
-"/power7",   .! Power.page (Num.Int 7);
-"/power17",  .! Power.page (Num.Int 17);
-"/power32",  .! Power.page (Num.Int 32);
-
-"/gc",       .! Gc.page;
-
-"/static01", .! Static01.page;
-"/static02", .! Static02.page;
-"/static04", .! Static04.page;
-"/static08", .! Static08.page;
-"/static16", .! Static16.page;
-"/static32", .! Static32.page;
-"/static64", .! Static64.page;
-
-] StringMap.empty;;
-
-#use "server/codeHandler.ml";;       
+let add (uri,scr) = StringMap.add uri scr;;
+let code_map = List.fold_right add code_list StringMap.empty;;
 Sys.set_signal Sys.sigpipe Sys.Signal_ignore;;
 Sys.catch_break true;;
 Server.start [CodeHandler.run code_map; 

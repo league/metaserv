@@ -1,0 +1,28 @@
+#! /usr/bin/perl
+
+use strict;
+my $num_files = $ARGV[0];
+my $dir = sprintf "d.%02d", $num_files;
+mkdir $dir;
+
+for (my $i = 0;  $i < $num_files;  $i++) {
+    my $name = &rand_filename;
+    my $size = int(rand 64);
+    system("dd if=/dev/urandom bs=1k count=$size of=$dir/$name");
+}
+
+sub rand_filename {
+    my $size = int(rand 5) + 3;
+    my $name = "";
+    for (my $i = 0;  $i < $size;  $i++) {
+        my $c = int(rand 36);
+        my $d = ($c < 10)? $c+ord('0') : $c-10+ord('a');
+        $name .= chr $d;
+    }
+    my $ext = int(rand 5);
+    if ($ext eq 0) { $name .= ".ml"; }
+    elsif ($ext eq 1) { $name .= ".cmo"; }
+    else { $name .= ".txt"; }
+
+    return $name;
+}

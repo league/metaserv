@@ -1,4 +1,4 @@
-texjunk=aux bbl blg brf dvi log out ps waux
+include ../Makefile.rules
 
 default:
 

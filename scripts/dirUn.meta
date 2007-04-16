@@ -15,7 +15,7 @@
        None -> default_regex
      | Some r -> (r, Str.regexp r) 
  ?>
-<?~let list = list_files d .<rc>. ?>
+<? let list = list_files d rc ?>
 <? let list = sort_by (arg "ord") list ?>
 
 
@@ -152,11 +152,11 @@ let list_files d re =
     match files with
       [] -> term
     | name::files ->
-        .<let list =
-            try ignore(Str.search_forward .~re name 0);
-                .~(lift(fileinfo d name)) :: .~term
-            with Not_found -> .~term
-          in .~(loop .<list>. files)>. in
-  loop .<[]>. (read_all (opendir d) [])
+          let list =
+            try ignore(Str.search_forward re name 0);
+                (fileinfo d name) :: term
+            with Not_found -> term
+          in loop list files in
+  loop [] (read_all (opendir d) [])
 
  ?>
