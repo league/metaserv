@@ -1,0 +1,147 @@
+open Buf
+type page = 
+     {decl:buf list, 
+      code:buf list,
+      pragmas:string AtomMap.map
+      }
+val initial:page = {decl=[], code=[], pragmas=AtomMap.empty}
+fun addD (page:page) f = 
+    {decl=f(#decl page), 
+     code= #code page, pragmas= #pragmas page}
+
+fun addC (page:page) f = 
+    {code=f(#code page), 
+     decl= #decl page, pragmas= #pragmas page}
+
+fun pragma (page:page) (k,v) =
+    {pragmas = AtomMap.insert(#pragmas page, 
+                              Atom.atom (Substring.string k),
+                              Substring.string v),
+     decl= #decl page,
+     code= #code page}
+
+%%
+%name Meta
+%pos LexUtils.pos
+%eop EOF
+%noshift EOF
+
+%term EOF | TEXT of string | CODE of string | STRING of string
+    | LBRACK | RBRACK | LCURLY | RCURLY | LPAREN | RPAREN
+    | LANGLE | RANGLE | SEMI | COMMA | LET | IN | EQ
+    | RP                                (*  ?>    *)
+    | LP_DECL                           (* <?     *)
+    | LP_CODE_EQ                        (* <?~=   *)
+    | LP_CODE                           (* <?~    *)
+    | LP_EQ                             (* <?=    *)
+    | LP_FMT                            (* <?"    *)
+    | LP_CODE_FMT                       (* <?~"   *)
+    | LP_CODE_LET                       (* <?~let *)
+    | LP                                (* <?     *)
+    | LP_PRAGMA                         (* <?pragma *)
+
+%nonterm start of page | page of page | text of buf list
+    | decl of buf list * bool | args of buf list | argc of buf list
+    | notcex of buf list | notce of buf list
+    | notcx of buf list | notc of buf list
+    | notex of buf list | note of buf list
+    | anyx of buf list | any of buf list
+
+%%
+start: page (page)
+
+text
+  : TEXT text (S TEXT::text)
+  | TEXT ([S TEXT])
+
+page
+  : text page 
+      (addC page (fn c=> [S "puts \"", S(toString text), S "\";\n", L c]))
+  | LP_PRAGMA CODE RP page
+      (let open Substring Char
+        in pragma page (splitl isAlphaNum (dropl isSpace (all CODE)))
+       end)
+  | LP_DECL CODE RP page
+      (addD page (fn d=> [S CODE, L d]))
+  | LP_CODE_EQ CODE RP page 
+      (addC page (fn c=> [S "puts (.~(", S CODE, S "));\n", L c]))
+  | LP_EQ CODE RP page
+      (addC page (fn c=> [S "puts (", S CODE, S ");\n", L c]))
+  | LP_CODE CODE RP page
+      (addC page (fn c=> [S ".~(", S CODE, S ");\n", L c]))
+  | LP decl RP page
+      (addC page (fn c=>
+         let val (buf, term) = decl
+             val code = [L c]
+             val code = if term then code
+                        else (S ";\n"::code)
+          in L buf::code
+         end))
+  | LP_CODE_LET note EQ any RP page 
+      (addC page (fn c=> [S "let", L note, S "= .~(",
+                          L any, S ") in\n", L c]))
+  | LP_FMT STRING args RP page
+      (addC page (fn c=> [S "Printf.kprintf puts \"", S STRING, 
+                          S "\"", L args, S ";\n", L c]))
+  | LP_CODE_FMT STRING argc RP page
+      (addC page (fn c=> [S "Printf.kprintf puts \"", S STRING, 
+                          S "\"", L argc, S ";\n", L c]))
+  | (initial)
+
+args
+  : notc COMMA args ([S " (", L notc, S ") ", L args])
+  | notc ([S " (", L notc, S ") "])
+
+argc
+  : notc COMMA argc ([S " (.~(", L notc, S ")) ", L argc])
+  | notc ([S " (.~(", L notc, S ")) "])
+
+notcex
+  : CODE              ([S CODE])
+  | SEMI              ([S ";"])
+  | LBRACK any RBRACK ([S "[", L any, S "]"])
+  | LCURLY any RCURLY ([S "{", L any, S "}"])
+  | LPAREN any RPAREN ([S "(", L any, S ")"])
+  | LANGLE any RANGLE ([S ".<", L any, S ">."])
+  | LET any IN        ([S "let", L any, S "in"])
+
+notcx
+  : notcex (notcex)
+  | EQ     ([S "="])
+
+notc
+  : notcx notc ([L notcx, L notc])
+  | ([])
+
+notex
+  : notcex (notcex)
+  | COMMA  ([S ","])
+
+note
+  : notex note ([L notex, L note])
+  | ([])
+
+anyx
+  : notcex (notcex)
+  | EQ     ([S "="])
+  | COMMA  ([S ","])
+
+any
+  : anyx any ([L anyx, L any])
+  | ([])
+
+(* in addition to buffer, return 
+   true if the declaration is terminated by 'in' or ';' *)
+decl
+  : ([], false)
+  | LET any ([S "let", L any, S " in \n"], true)
+  | anyx decl
+      (let val (buf, term) = decl
+           val buf = [L anyx, L buf]
+           val term = term orelse
+                      case List.last anyx
+                       of(S ";"|S "in") => true
+                       | _ => false
+        in (buf, term)
+       end)
+

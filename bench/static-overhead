@@ -1,0 +1,28 @@
+#! /bin/sh
+# Usage: ./static-overhead method size 
+# where method is one of:
+#   apache
+#   camlfile
+#   camlcode
+
+set -m
+make run &
+
+echo '========================================' $1-$2
+
+case $1 in
+    apache)
+        url=http://localhost/static$2.meta
+        ;;
+    camlfile)
+        url=http://localhost:8000/scripts/static$2.meta
+        ;;
+    camlcode)
+        url=http://localhost:8000/static$2
+        ;;
+esac
+sleep 4
+
+ab -k -t 30 -c 8 $url 
+
+kill -INT %%

@@ -1,0 +1,15 @@
+a.file {
+  text-decoration: none;
+  color: black;
+}
+a.file:hover {
+  background: yellow;
+}
+span.dir  { color: blue; }
+span.lib  { color: brown; }
+span.obj  { color: grey; }
+span.doc  { color: green; }
+span.src  { color: #b60; }
+span.hdr  { color: #990; }
+span.exe  { color: purple; }
+span.md5  { color: grey; font-style: italic; }

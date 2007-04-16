@@ -1,0 +1,129 @@
+LinuxWorld Magazine
+Volume 2, Issue 1
+
+
+HOW TO SURVIVE BEING SLASHDOTTED
+Tips on how to survive a sudden increase in Web traffic
+
+December 22,2003
+
+by James Turner
+
+
+For several hours each day, Rob Malda has the power to send tens of
+thousands of Web surfers hurtling toward sometimes unprepared Web
+sites. No, he's not some shady Eastern European extortionist; he's one
+of the founders and current editors of Slashdot, the blog of choice
+for the geek community. Working under the nickname of CmdrTaco (a
+reference to a Dave Barry column), Malda has been publicizing the
+interesting and weird of the Web since 1997.
+
+The way Slashdot works is simple. Each day, some 500 entries are
+submitted through the site, usually references to interesting or
+quirky Web sites someone has encountered. One of the five Slashdot
+editors, who work in shifts, reads the submission and decides if it
+passes muster, and will be one of the dozen or so stories that show up
+on the site's front page every day.
+
+For an unprepared site, what happens next can be a sysadmin's worst
+nightmare. A site that might be designed to handle a few hundred hits
+per day can suddenly find itself handling that many a second. In a few
+hours, as many as a quarter-million visitors may be trying to access
+the site. In short, you've been Slashdotted.
+
+Sometimes the traffic may exhaust a month's worth of bandwidth
+allocation from its ISP in a few days. Sometimes the requests can plug
+up a limited connection. But, according to Malda, most often it's poor
+planning and site architecture that do people in. "The problem is, if
+you have any sort of complicated code on your page, that's what kills
+people. I generally think that sites are not dying because they fill
+their pipe, but because they have poorly written code," says Malda.
+
+For a variety of reasons, the Slashdot staff doesn't give advanced
+warning to Slashdottees. For one thing, it can be nearly impossible to
+find out who runs a Web site, and with the workload of processing
+hundreds of submissions each day, there just isn't time to research
+it. In addition, Malda says that in many cases, sites would change
+their content if they knew they were going to be featured.
+
+CmdrTaco can't estimate how many sites succumb to the onslaught of
+traffic that Slashdotting can bring. For one thing, he normally sees
+the sites before they've had the spotlight turned upon them. "They're
+always up for me," he comments wryly.
+
+There doesn't seem to be any kind of hard and fast rule for what sites
+go down. "It never ceases to amaze me when we see a big site
+buckle. As a general rule, anybody who has a pretty good understanding
+of Web design, they've done a good job of learning what information to
+cache. What information needs to be pregenerated. So when you're
+actually loading a page, even if it's a complicated page that looks
+very dynamic and custom, on the back end of that, what they're really
+doing is putting together a bunch of puzzle pieces that have been
+pregenerated, and making the simplest, quickest decisions they
+possibly can."
+
+He points out that many sites dynamically generate what could be
+statically cached, causing them to fork many processes to handle a
+single request. While this may hold up under light load, when Slashdot
+points its finger in their direction, the processor can quickly run
+out of memory trying to simultaneously handle all the requests.
+
+Slashdot takes great pains to precache the most commonly requested
+content. Malda points out that the majority of the traffic is directed
+at the home page, and a few common customizations of the home page for
+registered users. By generating this content once and serving it
+statically, Slashdot dramatically reduces the demands placed on their
+processors.
+
+Known for their in-depth coverage of open source topics, Slashdot also
+"eats their own dog food." The site hosts on a collection of database
+servers running MySQL and Web servers, all running on top of
+Linux. Since Slashdot is owned by ODSN, which is in turn a part of VA
+Software, this is not too surprising. A team of four programmers
+maintains the software, written in Perl.
+
+Malda started Slashdot in his college days. Like Google and Yahoo,
+what started off as a diversion has now evolved into a serious
+business venture. When asked why Slashdot has succeeded where so many
+other blogs flounder, he credits the fact that they were first to
+market and built a good brand name before the market was flooded.
+
+Slashdot itself is not immune to unusual traffic patterns. "Slashdot
+has very predictable traffic patterns," says Malda. "Until such time
+that something happens that's extremely unusual for us. For example,
+in times of great war or terrorist attack. A typical Slashdot
+discussion might be somewhere in the 300 to 700 comment range. During
+those times, perhaps we suddenly see a discussion with 4,000
+comments. And our code is not necessarily optimized to handle the
+unusual circumstances that we don't deal with very often."
+
+Malda says that what occasionally knocks over Slashdot is the same
+thing that takes down other sites. "It's not usually the raw traffic
+that does it, it's the traffic doing something it doesn't usually do."
+He goes on to say that another big problem sites create for themselves
+is when the graphics and HTML for a page are being served for the same
+machine. Because a single page may request a dozen or more graphics,
+and Web servers can be tuned to deliver graphics very efficiently, Web
+admins can avoid clogging their servers with graphics requests that
+could be more quickly delivered from a second machine.
+
+Getting a story posted on Slashdot can be a real status symbol, but
+with 50 or 60 submissions for every posted story, it can also be a
+challenge. Unfortunately, according to Malda, there's no magic formula
+for getting a story accepted. "If I could give you a bulleted list, I
+could automate this and I could retire. But honestly it's not really
+that easy. There are a dozen different things that we look at. Is it
+relevant to our audience? Are we interested in it? Is it important? Is
+it funny? We take all of these different things and we kind of mix
+them together and then we basically make an arbitrary decision."
+
+He does have one inside hint for the desperate. "You have the
+different human factor. I'm more interested to pick some subject
+matter, perhaps, than Timothy. So if you know when I'm posting
+stories, and you know what stories I like, you might be more likely to
+get a story accepted if you submit it during my shift than during
+Timothy's. I'm the one who's probably going to be posting a story
+about an interesting case mod or a handheld. I'm the gadget junkie and
+I'm a case mod junkie. And our shifts are pretty obvious, you just
+look on the site and you see who's posted four or five stories in a
+row."

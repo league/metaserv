@@ -1,0 +1,92 @@
+\documentclass{acm_proc_article-sp}
+\usepackage{ucs,textcomp,url}
+\usepackage[numbers]{natbib}
+\usepackage[utf8]{inputenc}
+\ifx\pdfoutput\undefined\else
+  \usepackage[
+    backref,
+    pdfpagemode=None,
+    pdftitle={MetaOCaml Server Pages},
+    pdfsubject={Web Publishing as Staged Computation},
+    pdfauthor={Christopher League}
+  ]{hyperref}
+\fi
+\input{fonts}
+\begin{document}
+\title{MetaOCaml Server Pages:}
+\subtitle{Web Publishing as Staged Computation}
+\numberofauthors{1}
+\author{
+  \alignauthor Christopher League\\
+  \affaddr{Long Island University · Computer Science}\\
+  \affaddr{1 University Plaza · Brooklyn, NY 11201}\\
+  \email{christopher.league@liu.edu}}
+\conferenceinfo{MetaOCaml Workshop}{October 2004, Vancouver}
+\CopyrightYear{2004}
+\maketitle
+\begin{abstract}
+...
+\end{abstract}
+\category{D.3.2}{Programming Languages}{Language
+  Classifications}[Specialized application languages]
+\category{H.3.5}{Information Storage and Retrieval}{Online Information
+  Services}[Web-based services]
+\section{Introduction}
+
+Today, most successful sites are programs, not static
+data~\cite{greenspun99panda}.
+
+Web programming is difficult.
+
+It is an application area that is naturally staged.  First, content is
+prepared and placed on the server (publishing stage).  Next, a user's
+browser requests the content (retrieval stage).  Finally, the browser
+displays the content on the client (display stage).  There is an
+opportunity for dynamic code to be executed at any of these stages.
+
+Give an example: conference calendar.  
+
+\section{Performance}
+
+\section{Related work}
+
+\subsection{Server-side computation}
+\label{sec:related-server}
+
+\begin{itemize}
+\item PHP~\cite{bakken04php} is a neat language.
+\item JSP~\cite{mahmoud03jsp}
+\item SMLserver~\cite{elsman02smlserver,elsman03web}
+\item XCaml~\cite{baretta04xcaml}
+\end{itemize}
+
+See also the book by \citet{greenspun99panda}.
+
+\subsection{Client-side computation}
+\label{sec:related-client}
+\begin{itemize}
+\item JavaScript \cite{ecmascript99,flanagan01javascript}
+\item MMM, with Caml applets, by \citet{rouaix96web}
+\end{itemize}
+
+\subsection{Validated HTML in functional language}
+\begin{itemize}
+\item \citet{elsman04typing}
+\item \citet{wallace99haxml}
+\item \citet{ohl04xhtml}
+\item \citet{hosoya03xduce}
+\end{itemize}
+
+\section{Future directions}
+
+\section{Conclusion}
+
+\bibliographystyle{abbrvnat}
+\bibliography{refs,../../cal}
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

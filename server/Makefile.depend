@@ -1,0 +1,21 @@
+chunked.cmo: chunked.cmi 
+chunked.cmx: chunked.cmi 
+timeStamp.cmo: timeStamp.cmi 
+timeStamp.cmx: timeStamp.cmi 
+stringMap.cmo: stringMap.cmi 
+stringMap.cmx: stringMap.cmi 
+status.cmo: status.cmi 
+status.cmx: status.cmi 
+request.cmo: stringMap.cmi request.cmi 
+request.cmx: stringMap.cmx request.cmi 
+logFile.cmo: request.cmi status.cmi logFile.cmi 
+logFile.cmx: request.cmx status.cmx logFile.cmi 
+logFile.cmi: request.cmi status.cmi 
+server.cmo: logFile.cmi request.cmi status.cmi server.cmi 
+server.cmx: logFile.cmx request.cmx status.cmx server.cmi 
+server.cmi: request.cmi status.cmi 
+fileHandler.cmo: logFile.cmi request.cmi server.cmi status.cmi timeStamp.cmi \
+    fileHandler.cmi 
+fileHandler.cmx: logFile.cmx request.cmx server.cmx status.cmx timeStamp.cmx \
+    fileHandler.cmi 
+fileHandler.cmi: server.cmi 

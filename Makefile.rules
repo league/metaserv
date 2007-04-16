@@ -1,0 +1,25 @@
+ifeq ($(shell uname), Darwin)                 # -*- makefile -*-
+  metadir=$(HOME)/r/metaocaml-ppc/bin
+  heap=ppc-darwin
+else
+  metadir=$(HOME)/r/metaocaml/bin
+  heap=x86-linux
+endif
+
+sml=$(HOME)/tmp/nj45/bin/sml
+ocaml=$(metadir)/metaocaml $(mlflags) $(addsuffix .cma, $(libs))
+ocamlc=$(metadir)/ocamlc -thread -g
+
+libs=unix str nums threads server
+mlflags+=-I +threads
+
+%.cma:
+	$(ocamlc) -a -o $@ $^
+
+%.cmi: %.mli
+	$(ocamlc) -c $<
+
+%.cmo: %.ml
+	$(ocamlc) -c $<
+
+junk=*.cm? *~

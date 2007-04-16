@@ -1,0 +1,35 @@
+\makeatletter
+\usepackage{struktur,bodoni}
+
+\iffalse
+\renewcommand{\Large}{\sffamily\fontsize\@xivpt{18}}
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+                       {-18\p@ \@plus -4\p@ \@minus -4\p@}%
+                       {12\p@ \@plus 4\p@ \@minus 4\p@}%
+                       {\sffamily\large\bfseries\boldmath
+                        \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+                       {-18\p@ \@plus -4\p@ \@minus -4\p@}%
+                       {8\p@ \@plus 4\p@ \@minus 4\p@}%
+                       {\sffamily\normalsize\bfseries\boldmath
+                        \rightskip=\z@ \@plus 8em\pretolerance=10000 }}
+\fi
+
+%% Following is for fiddling with acmproc-sp fonts
+\font\ixpt      = 5bdrx7t at 9pt
+\font\confname  = 5bdrix7t at 8pt
+\font\crnotice  = 5bdrx7t at 8pt
+\font\ninept    = 5bdrx7t at 9pt
+\font\secfnt    = 5sxb7t at 12pt
+\font\subsecfnt = 5sxb7t at 11pt
+\font\ttlfnt    = 5sxh7t at 18pt
+\font\subttlfnt = 5sxb7t at 14pt
+\font\aufnt     = 5sxb7t at 11pt
+\font\affaddr   = 5sxr7t at 10pt
+\font\eaddfnt   = 5sxr7t at 10pt
+\makeatother
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End: 
