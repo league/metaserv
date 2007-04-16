@@ -15,7 +15,7 @@ MLFLAGS = -I +threads -I server
 CFLAGS = -thread -g
 
 # The Meta->ML compiler is written in Standard ML.
-SML = $(HOME)/tmp/nj48/bin/sml
+SML = $(HOME)/tmp/nj/bin/sml
 CM = .cm
 
 # Other required programs
@@ -86,7 +86,7 @@ endif
 # These are useful for generating random files and directories of
 # given size.
 scripts/static%.meta:
-	mimencode </dev/urandom | dd bs=1K count=$* >$@
+	mimencode </dev/urandom | dd bs=1024 count=$* >$@
 bench/d.%:
 	cd bench && $(PERL) make-sim-dir $*
 
