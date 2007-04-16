@@ -178,4 +178,4 @@ let rec ord_options puts ord opts =
           "<option %s value='%s'>%s</option>\n"
           (if .~ord = tag then "selected" else "") tag text;
        .~(ord_options puts ord opts))>.
-?>
+(* End of `dir.meta' *) ?>

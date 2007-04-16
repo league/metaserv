@@ -1,0 +1,6 @@
+<?pragma args n?>
+<?^open Printf
+   let rec count puts i = if i = 0 then .<()>.
+         else .<(.~puts .~(lift(sprintf "%d<br>" i));
+                 .~(count puts (i-1)))>. ?>
+<?.~(count .<puts>. n)?>

@@ -1,5 +1,5 @@
 set output "browse.eps"
-set terminal epslatex color
+set terminal epslatex 
 set logscale x
 
 set key noautotitles

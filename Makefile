@@ -189,7 +189,7 @@ screens_png := $(addsuffix .png, $(screens))
 screens_eps := $(addsuffix .eps, $(screens))
 
 listings := trans.ml navspec-sig.ml dir-out.ml codeHandler.mli \
-    $(addsuffix .meta, first pi perm perm2 perm3 count power dir gc trans)
+  $(addsuffix .meta, first pi perm perm2 perm3 count count2 power dir gc trans)
 listings_tex := $(addprefix paper/, $(addsuffix .tex, $(listings)))
 
 TEXENV = 
@@ -205,7 +205,7 @@ plain_pages := /gc/Gc /Index /about/About /uname/Uname \
   /perm2/Perm2 /perm3/Perm3 /count/Count /checkme/Checkme
 dir_pages := metac paper scripts server bench images
 
-script_names := dir dirUn power powerUn \
+script_names := dir dirUn power powerUn count2 \
   $(addprefix static, $(static_sizes)) \
   $(notdir $(shell echo $(plain_pages) | tr '[A-Z]' '[a-z]'))
 
@@ -241,6 +241,8 @@ scripts/run: Makefile $(ml_files) scripts/run_
 	for d in $(dir_pages); do \
 	  echo "\"/$$d/\", (fun () -> .! Dir.page \"/$$d/\" \"$$d\");" >>$@; \
 	done
+	echo "\"/longcount\", (fun () -> .! Count2.page 99);" >>$@;
+	echo "\"/shortcount\", (fun () -> .! Count2.page 9);" >>$@;
 	echo '];;'          >>$@
 	cat scripts/run_    >>$@
 

@@ -1,10 +1,10 @@
 <?pragma args a b c ?>
-<?^ (* Declarations *) ?>
-<? (* Code *) ?>
-<?= (* String to be printed *) ?>
+<?^ declarations ?>
+<? statements ?>
+<?= string_to_be_printed ?>
 Regular text.
 <?"format string" d, e, f ?>
-<?^ (* More declarations *) ?>
-<? let x = (* Expression *) ?>
-<? (* More code *) ?>
+<?^ more_declarations ?>
+<? let x = expression ?>
+<? more_statements ?>
 Bye!
