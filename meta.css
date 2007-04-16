@@ -6,6 +6,7 @@ a.file {
 a.file:hover {
   background: yellow;
 }
+
 span.dir  { color: blue; }
 span.lib  { color: brown; }
 span.obj  { color: grey; }
