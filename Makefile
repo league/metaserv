@@ -65,7 +65,7 @@ texclean:
 
 mostlyclean: texclean
 	find . -name '*~' | xargs $(RM)
-	$(RM) server.log 
+	$(RM) server.log paper/missfont.log
 	$(RM) -r metac/$(CM)
 
 clean: mostlyclean
@@ -199,7 +199,7 @@ paper/paper.dvi: $(tex_files) $(screens_eps) $(figs_eps)
 
 plain_pages := /gc/Gc /Index /about/About /uname/Uname \
   /uptime/Uptime /http/Http /first/First /pi/Pi /perm/Perm \
-  /perm2/Perm2 /perm3/Perm3 /count/Count
+  /perm2/Perm2 /perm3/Perm3 /count/Count /checkme/Checkme
 dir_pages := metac paper scripts server bench images
 
 script_names := dir dirUn power powerUn \
