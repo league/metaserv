@@ -1,7 +1,7 @@
 <?~=lift(preamble "Uptime")?>
 <?~=lift(navbar "/uptime")?>
-<?^let start = Unix.time()
-   let unit s k n = 
+<?~let start = lift(Unix.time())?>
+<?^let unit s k n = 
      let m = floor(n /. k) in
      Printf.sprintf "%.0f %s%s" m s
        (if m = 1. then "" else "s")
@@ -22,7 +22,7 @@
 <h1>Uptime</h1>
 
 <p>This server has been running for 
-<?=interval (Unix.time()-.start)?>.  
+<?=interval (Unix.time() -. start)?>.  
 <?(try
     let i = open_in "/proc/uptime" in
     let s = input_line i in

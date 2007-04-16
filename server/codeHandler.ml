@@ -1,4 +1,5 @@
-  type code = Request.req -> (string -> unit) -> unit
+type page = Request.req -> (string -> unit) -> unit
+type map = ((unit -> page) * page ref) StringMap.t
 
   let chunked_response f o =
     output_string o "Transfer-encoding: chunked\r\n\r\n";
@@ -28,13 +29,13 @@
   let run map req o =
    (match Request.meth req with
       Request.GET ->
-        let code = StringMap.find (Request.uri req) map in
+        let _, code = StringMap.find (Request.uri req) map in
         let fn puts = 
           try 
             (*Mutex.lock mutex;
             let code = .!code in 
             Mutex.unlock mutex;*)
-            code req puts
+            !code req puts
           with e ->
             Printf.kprintf puts
               "<b>Unhandled exception: %s</b>" (Printexc.to_string e) in
@@ -84,4 +85,41 @@
         choose_response req page o;
         Status.Moved_permanently
      | _ -> raise Server.Not_implemented)
+
+(* This one only applies if the uri ends with "!".  It will 
+   force regeneration of the page. *)
                     
+  let regenerate map req o =
+    (match Request.meth req with
+      Request.GET | Request.POST ->
+        let uri = Request.uri req in
+        let n = String.length uri - 1 in
+        if String.get uri n <> '!'
+        then raise Not_found;
+        let uri' = String.sub uri 0 n in
+        let (mk, cache) = StringMap.find uri' map in
+        cache := mk();
+        let url = "http://" in
+        let url = url^Unix.gethostname() in
+        let url = 
+          match Unix.getsockname (Unix.descr_of_out_channel o) with
+            Unix.ADDR_INET(_,p) -> Printf.sprintf "%s:%d" url p
+          | _ -> url (* bogus anyway *) in
+        let url = url^uri' in
+        let page puts =
+          Printf.kprintf puts "Go <a href=\"%s\">here</a>.\n" url in
+        Printf.fprintf o
+          "HTTP/1.1 301 Moved Permanently\r\n\
+          Server: MetaOCaml/%s\r\n\
+          Connection: %s\r\n\
+          Pragma: no-cache\r\n\
+          Date: %s\r\n\
+          Location: %s\r\n\
+          Content-type: text/html\r\n"
+                Sys.ocaml_version
+                (Request.keep_alive req)
+                (TimeStamp.now())
+                url;
+        choose_response req page o;
+        Status.Moved_permanently
+     | _ -> raise Server.Not_implemented)

@@ -35,6 +35,9 @@ ordered by
 <?=header?>
 <? iter (fun f -> puts f.prn) list ?>
 </pre>
+<form method="post" action="<?= uri ?>!">
+<input type="submit" value="Regenerate" />
+</form>
 <?=postamble?>
 
 <?^ 

@@ -130,7 +130,7 @@ bench/d.%:
 # for server:
 include Makefile.depend
 
-server_modules := chunked timeStamp stringMap status request \
+server_modules := chunked timeStamp stringMap stringSet status request \
 		  logFile server fileHandler codeHandler navBar
 server_modules := $(addprefix server/, $(server_modules))
 server_objects := $(addsuffix .cmo, $(server_modules))
@@ -184,24 +184,24 @@ scripts/run: Makefile $(ml_files) scripts/run_
 	done
 	echo 'let code_list = ['          >>$@
 	for p in $(plain_pages); do \
-	  echo "\"`dirname $$p`\", .! `basename $$p`.page;"  >>$@; \
+	  echo "\"`dirname $$p`\", (fun () -> .! `basename $$p`.page);"  >>$@; \
 	done
 	for c in $(power_cases); do \
 	  echo -n "\"/power$$c\", "                 >>$@; \
-	  echo    ".! Power.page (Num.Int $$c);"    >>$@; \
+	  echo    "(fun () -> .! Power.page (Num.Int $$c));"    >>$@; \
 	  echo -n "\"/powerun$$c\", "               >>$@; \
-	  echo    ".! PowerUn.page (Num.Int $$c);"  >>$@; \
+	  echo    "(fun () -> .! PowerUn.page (Num.Int $$c));"  >>$@; \
 	done
 	for z in $(static_sizes); do \
-	  echo "\"/static$$z\", .! Static$$z.page;" >>$@; \
+	  echo "\"/static$$z\", (fun () -> .! Static$$z.page);" >>$@; \
 	done
 	for d in $(dir_sizes); do \
-	  echo "\"/browse$$d\", .! Dir.page \"\" \"bench/d.$$d\";" >>$@; \
-	  echo "\"/unbrowse$$d\", .! DirUn.page \"bench/d.$$d\";" >>$@; \
+	  echo "\"/browse$$d\", (fun () -> .! Dir.page \"\" \"bench/d.$$d\");" >>$@; \
+	  echo "\"/unbrowse$$d\", (fun () -> .! DirUn.page \"bench/d.$$d\");" >>$@; \
 	done
-	echo "\"/browse\", .! Dir.page \"/browse\" \".\";" >>$@
+	echo "\"/browse\", (fun () -> .! Dir.page \"/browse\" \".\");" >>$@
 	for d in $(dir_pages); do \
-	  echo "\"/$$d/\", .! Dir.page \"/$$d/\" \"$$d\";" >>$@; \
+	  echo "\"/$$d/\", (fun () -> .! Dir.page \"/$$d/\" \"$$d\");" >>$@; \
 	done
 	echo '];;'          >>$@
 	cat scripts/run_    >>$@

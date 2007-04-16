@@ -19,10 +19,10 @@
 <?~=lift(navbar("/power"^string_of_num y))?>
 <form method="get">
   This page computes 
-  <input name="x" type="text" value="<?=x'?>" size="20">
+  <input name="x" type="text" value="<?=x'?>" size="20" />
   <sup><?=y'?></sup>
-</form><p>
+</form>
 <?~let result = power y .<num_of_string x'>.(*@\label{line:power-num}@*)?>
-The result is: 
-<pre><?wrap puts (string_of_num result) ?></pre>
+<p>The result is: 
+<pre><?wrap puts (string_of_num result) ?></pre></p>
 <?=postamble?>

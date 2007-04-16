@@ -1,8 +1,9 @@
-let add (uri,scr) = StringMap.add uri scr;;
+let add (uri,mk) = StringMap.add uri (mk, ref(mk()));;
 let code_map = List.fold_right add code_list StringMap.empty;;
 Sys.set_signal Sys.sigpipe Sys.Signal_ignore;;
 Sys.catch_break true;;
 Printf.printf "Ready...\n%!";
 Server.start [CodeHandler.run code_map; 
+              CodeHandler.regenerate code_map;
               CodeHandler.redirect code_map;
               FileHandler.root "."];;

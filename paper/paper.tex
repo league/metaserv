@@ -198,10 +198,9 @@ The next time you visit, the server remembers your
 preferences.  Perhaps it even sends you email to remind you
 of upcoming submission and registration deadlines.
 
-\screenshot{confcal}{A simple conference calendar,
-  implemented as a PHP script that connects to a PostgreSQL
-  database.  Not as sophisticated as the service described
-  above!}
+\screenshot{confcal}{A simple conference calendar, implemented as a
+  PHP script that connects to a PostgreSQL database.  Not as
+  sophisticated as the service described in the text.}
 
 Now, how might this conference service be staged?  Can
 anything be computed off-line (at the \emph{publish} stage)?
@@ -286,9 +285,9 @@ discussed in section~\ref{sec:perf}
 The general idea of a \emph{server page} language is that we
   write HTML by default, and embed code %
 \lstinline{<?like this?>}.  %
-This is the standard XML syntax for \emph{processing
-instructions.}  In our case, the instructions are written in
-\MOC{}.   Here is your first \MOC{} server page:
+PHP programmers are familiar with this syntax for embedding code, but
+in our case, the code itself is written in \MOC.  Here is your first
+\MOC{} server page:
 
 \lstinputlisting{first.meta}
 and its output:
@@ -446,7 +445,7 @@ site.\footnote{I hope to make the demo available on the web in time
   be downloaded and run locally.} %
 To give the services a similar look, we developed a site-wide style
 sheet, and an OCaml function to generate a navigation bar from a
-hierarchical list of page titles and links.  The follow bindings are
+hierarchical list of page titles and links.  The following bindings are
 available site-wide:
 \begin{lstlisting}[numbers=none]
   val preamble: string -> string
@@ -486,7 +485,6 @@ service appears in listing~\ref{lst:power.meta}.
 
 The first function wraps a string into a fixed width block.  The power
 function itself begins on line~\ref{line:power-fun}.  No output should
-
 occur until the preamble is generated on
 line~\ref{line:power-preamble}.  The user's input is translated to a
 number relatively late (line~\ref{line:power-num}); if there is a
@@ -578,8 +576,6 @@ thing pre-generated here is the navigation bar (line 2).
 \section{Implementation}
 \label{sec:impl}
 
-\textit{Ugh\ldots out of time\ldots but I will explain one
-  critical detail\ldots}
 
 Currently, the \MOC{} implementation is not capable of reading
 and writing \id{code} values to a file.  This means that
@@ -718,7 +714,7 @@ works with mainstream browsers\ldots
 in functional languages.  We could probably use OCaml's type
 system to greater advantage this way, but it may require
 validating the text parts of the server page with a more
-mainstream XML parser.
+mainstream SGML or XML validator.
 
 \newpage
 \section{Future directions}
