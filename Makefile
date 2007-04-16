@@ -21,6 +21,7 @@ CM = .cm
 # Other required programs
 PERL = perl
 PHP = php
+NOHUP = nohup
 ENCODE = uuencode -m -
 GNUPLOT = gnuplot
 CONVERT = convert
@@ -48,6 +49,8 @@ all: default $(addprefix bench/d., $(dir_sizes))
 
 run: all
 	$(OCAMLCMD) scripts/run
+daemon: all
+	nohup $(OCAMLCMD) scripts/run &
 
 interact: default
 	$(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
