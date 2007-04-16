@@ -8,7 +8,7 @@ mkdir $dir;
 for (my $i = 0;  $i < $num_files;  $i++) {
     my $name = &rand_filename;
     my $size = int(rand 64);
-    system("dd if=/dev/urandom bs=1k count=$size of=$dir/$name");
+    system("uuencode -m - </dev/urandom | dd bs=1024 count=$size of=$dir/$name");
 }
 
 sub rand_filename {

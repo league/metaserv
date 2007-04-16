@@ -13,7 +13,7 @@ set xtics nomirror ("1k" 1024, "2k" 2048, "4k" 4096, "8k" 8192, "16k" 16384, "32
 set xrange [768:98304]
 set mxtics 2
 set grid ytics 
-set key 5000,400 width 2 height 0.5 box
+set key 2500,400 reverse Left
 
 #     "static.apache.dat"   with lp lw 2 title "Apache", \
 

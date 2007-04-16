@@ -14,7 +14,7 @@ set mxtics 0
 set nozeroaxis
 set size .68,.60
 set grid ytics
-set key 500,280 box
+set key 300,280 reverse Left
 
 plot "power.dat"   with lp lw 2 pt 6 title "Staged", \
      "powerun.dat" with lp lw 2 pt 8 title "Unstaged"

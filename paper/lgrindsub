@@ -14,4 +14,10 @@ s:\?\\>:\\Munquote:g
 
 # Miscellaneous syntactic niceties
 s:\\-\\!\\>:\\ensuremath\\rightarrow:g
-s:\\<=:\\ensuremath\\leqslant:g
+s:\\<=:\\codeleq:g
+s:\\-:\\codeminus{}:g
+s:\\<:\\textlt{}:g
+s:\\>:\\textgt{}:g
+
+# Increase spacing
+s:\\Head{}:\\Head{}\\baselineskip=11pt:

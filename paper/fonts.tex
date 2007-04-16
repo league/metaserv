@@ -1,8 +1,5 @@
 \usepackage{struktur,bodoni}
 %% Following is for fiddling with acmproc-sp fonts
-\font\rawrm     = 5sxr8r at 9pt
-\font\rawbf     = 5sxb8r at 9pt
-\font\rawhv     = 5sxh8r at 9pt
 \font\ixpt      = 5bdrx7t at 9pt
 \font\confname  = 5bdrix7t at 8pt
 \font\crnotice  = 5bdrx7t at 8pt
@@ -15,14 +12,23 @@
 \font\affaddr   = 5sxr7t at 10pt
 \font\eaddfnt   = 5sxr7t at 10pt
 
-\font\CMfont = 5bdrx7t at 9pt
-\font\KWfont = 5sxb7t at 8pt
-\font\VRfont = 5sxr7t at 8pt
-\font\BGfont = 5sxr7t at 8pt
+\font\CMfont = 5bdrx7t at 9pt  % comments (text)
+\font\KWfont = 5sxb7t at 8pt   % keywords
+\font\VRfont = 5sxr7t at 8pt   % variables
+\font\BGfont = 5sxr7t at 8pt   % other (code)
+
+\font\rawcm  = 5bdr8r at 9pt  % should match \CMfont
+\font\rawrm  = 5sxr8r at 8pt  % should match \BGfont
+\font\rawbf  = 5sxb8r at 8pt
+\font\rawhv  = 5sxh8r at 8pt
 
 \def\labelitemi{\textbullet}
 \def\la{{\rawrm\char'074}}
 \def\ra{{\rawrm\char'076}}
+\def\codeleq{{\rawrm\char'235}}
+\def\codeminus{{\rawrm\char'226}}
+\def\textlt{{\rawcm\char'074}}
+\def\textgt{{\rawcm\char'076}}
 \def\cd#1{{\BGfont#1}}
 \def\id#1{\texttt{#1}}
 \def\to{\ensuremath\rightarrow}

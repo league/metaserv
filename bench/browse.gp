@@ -1,5 +1,5 @@
 set output "browse.eps"
-set terminal epslatex color 
+set terminal epslatex color
 set logscale x
 
 set key noautotitles
@@ -9,12 +9,15 @@ set border 3
 set xtics nomirror 2
 set ytics nomirror 200
 set xrange [1.68:76]
-set yrange [0:1000]
 set mxtics 0
-set size .68,.60
+set size .68,.85
 set grid ytics
-set key 39,1050 box
+set key outside below reverse Left
 
-plot "browse.dat"   with lp lw 2 pt 6 title "Staged", \
-     "browse-apache.dat" with lp lw 2 pt 7 title "*Apache", \
-     "unbrowse.dat" with lp lw 2 pt 8 lt 4 title "Unstaged"
+plot \
+  "browse.dat"       with lp lw 2 title "Staged MetaOCaml", \
+  "browse-php.dat"   with lp lw 2 title "Staged PHP", \
+  "unbrowse.dat"     with lp lw 2 title "Unstaged MetaOCaml", \
+  "unbrowse-php.dat" with lp lw 2 title "Unstaged PHP"
+
+#     "browse-apache.dat" with lp lw 2 title "*Apache", \

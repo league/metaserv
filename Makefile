@@ -20,12 +20,13 @@ CM = .cm
 
 # Other required programs
 PERL = perl
+PHP = php
 ENCODE = uuencode -m -
 GNUPLOT = gnuplot
 CONVERT = convert
 EPSTOPDF = epstopdf
-TEXI2DVI = texi2dvi
-TEXI2PDF = texi2pdf
+TEXI2DVI = texi2dvi -b
+TEXI2PDF = texi2pdf -b
 DVIPS = dvips
 LGRIND = lgrind -d paper/lgrindef 
 LSED = sed -f paper/lgrindsub
@@ -43,11 +44,16 @@ default: server/server.cma scripts/run
 LIBS = unix str nums threads server
 OCAMLCMD = $(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
 
-run: default $(addprefix bench/d., $(dir_sizes))
+all: default $(addprefix bench/d., $(dir_sizes))
+
+run: all
 	$(OCAMLCMD) scripts/run
 
 interact: default
 	$(OCAML) $(MLFLAGS) $(addsuffix .cma, $(LIBS))
+
+staged_php := $(addprefix bench/d-, $(addsuffix .php, $(dir_sizes)))
+bench: $(staged_php)
 
 pdf: paper/paper.pdf
 ps: paper/paper.ps
@@ -59,8 +65,8 @@ mostlyclean:
 
 tex_junk = aux bbl blg log out
 clean: mostlyclean
-	$(RM) metac/metac.*-* server/*.cm?
-	$(RM) scripts/run $(ml_files)
+	$(RM) metac/metac.*-* server/*.cm? $(staged_php)
+	$(RM) scripts/run scripts/trans.ml $(ml_files)
 	$(RM) $(screens_png) $(screens_eps) $(listings_tex)
 	$(RM) $(figs_tex) $(figs_eps) $(figs_pdf)
 	$(RM) $(addprefix paper/paper., $(tex_junk) dvi ps 2ps)
@@ -104,6 +110,8 @@ scripts/static%.meta:
 	$(ENCODE) </dev/urandom | dd bs=1024 count=$* >$@
 bench/d.%:
 	cd bench && $(PERL) make-sim-dir $*
+bench/d-%.php: bench/d.% bench/dir-staged.php
+	$(PHP) bench/dir-staged.php $< >$@
 
 # Image conversion
 %.png: %.tiff
@@ -190,7 +198,7 @@ plain_pages := /gc/Gc /Index /about/About /uname/Uname \
   /perm2/Perm2 /perm3/Perm3 /count/Count
 dir_pages := metac paper scripts server bench images
 
-script_names := dir dirUn power powerUn trans \
+script_names := dir dirUn power powerUn \
   $(addprefix static, $(static_sizes)) \
   $(notdir $(shell echo $(plain_pages) | tr '[A-Z]' '[a-z]'))
 

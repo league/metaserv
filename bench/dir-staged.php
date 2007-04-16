@@ -1,6 +1,8 @@
 <?php 
-$d = $_GET['d'];
+## directory argument is first stage
+$d = $_SERVER['argv'][1];
 
+## navigation bar generated in first stage
 $navspec = array(
   array("/", "<img alt='Home' src='/images/camel.icon.png' />", array()),
   array("/browse"      ,"Browse"             , array(
@@ -27,7 +29,9 @@ $navspec = array(
 
 preamble("browsing $d");
 navbar();
-
+?>
+<?= "<?php\n" ?>
+## regular expression and sort order are second stage arguments:
 if (isset($_GET['re'])) {
    if($_GET['re']) {
       $re = $_GET['re'];
@@ -41,16 +45,17 @@ else {
 }
 
 $ord = $_GET['ord'];
+<?php
+
+### We can list the files and prepare the entries in the first stage,
+### but filtering is saved for later.
 
 $entry_fmt = 
 "<span class='md5'>%-32s</span>  %-13s  %5s  <a class='file' href='%s'><span class='%s'>%s</span></a>%s\n";
 
-#### List files
-
 $list = array();
 $dh = opendir($d);
 while(($file = readdir($dh)) !== false) {
-   if(ereg($re, $file)) {
       $fd = array();
       $path = "$d/$file";
       $fd['name'] = $file;
@@ -81,12 +86,18 @@ while(($file = readdir($dh)) !== false) {
                  human_size($fd['size']), $path, 
                  $fd['kind'], $fd['name'], $ind);
       array_push($list, $fd);
-   }
 }
 closedir($dh);
 
-#### Sort files
+### Now it's time to pass that array from first to second stage.
+### Using var_export seems to be slow.  Maybe serialize is better?
+## print "\$list = ";
+## print var_export($list);
+## print ";\n";
+print "\$list = unserialize(\"". addcslashes(serialize($list),'"'). "\");\n";
+?>
 
+#### Sort files -- 2nd stage code
 function cmp_ext($a,$b) { return strcmp($a['ext'],$b['ext']); }
 function cmp_kind($a,$b) { return strcmp($a['kind'],$b['kind']); }
 function cmp_name($a,$b) { return strcmp($a['name'],$b['name']); }
@@ -102,15 +113,12 @@ case "time": usort($list, "cmp_mtime"); break;
 case "size": usort($list, "cmp_size"); break;
 default:     usort($list, "cmp_name");
 }
-
-
- ?>
+<?= "?>\n" ?>
 
 <form method="get" action="">
-<input type="hidden" name="d" value="<?= $d ?>">
 <input type="submit" value="Redisplay" />
 files matching
-<input type="text" name="re" size="14" value="<?= $re ?>" />
+<input type="text" name="re" size="14" value='<?= "<?= \$re ?>" ?>' />
 ordered by
 <select name="ord">
   <? ord_options(array(
@@ -124,10 +132,13 @@ ordered by
 
 <pre>
 <b>checksum                          last modified  size   name</b>
-<? foreach($list as $f) {
-      print $f['prn'];
+<?= "<?\n" ?>
+   foreach($list as $f) {
+      if(ereg($re, $f['name'])) {
+         print $f['prn'];
+      }
    }
- ?>
+<?= "?>\n" ?>
 </pre>
 <? postamble(); ?>
 
