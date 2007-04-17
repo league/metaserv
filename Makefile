@@ -61,6 +61,14 @@ daemon: all
 interact: default
 	$(OCAMLCMD)
 
+VERSION=0.7
+dist:
+	REPODIR=$$PWD darcs dist --dist-name=metaserv-$(VERSION)
+
+predist: version.txt
+version.txt:
+	darcs changes --repodir=$$REPODIR --context >$@
+
 staged_php := $(addprefix bench/d-, $(addsuffix .php, $(dir_sizes)))
 bench: $(staged_php)
 
@@ -93,7 +101,7 @@ clean: mostlyclean
 	$(RM) -r paper/auto paper/_whizzy* paper/._whizzy*
 
 reallyclean: clean
-	$(RM) metac/meta.grm.* metac/meta.lex.*
+	$(RM) metac/meta.grm.* metac/meta.lex.* version.txt
 	$(RM) Makefile.depend scripts/static*.meta paper/paper.pdf
 	$(RM) -r bench/d.??
 
