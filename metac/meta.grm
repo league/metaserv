@@ -64,7 +64,7 @@ page
       (addC page (fn c=> [S "puts \"", S(toString text), S "\";\n", L c]))
   | LP_PRAGMA CODE RP page
       (let open Substring Char
-        in pragma page (splitl isAlphaNum (dropl isSpace (all CODE)))
+        in pragma page (splitl isAlphaNum (dropl isSpace (full CODE)))
        end)
   | LP_DECL CODE RP page
       (addD page (fn d=> [S CODE, S "\n", L d]))
