@@ -3,6 +3,7 @@ Science of Computer Programming 62(1), September 2006.  Elsevier.
 
 http://contrapunctus.net/league/research/papers/
 http://contrapunctus.net/league/haques/metaserv/
+http://comsci.liu.edu/darcsweb/darcsweb.cgi?r=metaserv/trunk;a=summary
 
 Copyright (c)2006 by Christopher League
 
@@ -42,7 +43,11 @@ Give it a C-c (or kill -INT) to trigger a server shutdown.
 
 2. You will need metaocaml already installed, AND *SML/NJ* (I used it  
 to write the translator, since I didn't feel like learning the OCaml  
-version of Lex and Yacc).  The makefile has variables METADIR and SML
+version of Lex and Yacc).  The makefile has variables METADIR and SML.
+
+It has been tested most recently with
+ * MetaOCaml version 3.09.1 alpha 030, and
+ * Standard ML of New Jersey v110.60
 
 3. It works for me on both linux/x86 and mac/ppc.
 
