@@ -209,7 +209,7 @@ server/nativeserver: $(addsuffix .cmx, $(server_modules)) server/hofMain.cmx
 	$(OCAMLOPT) $(MLFLAGS) -o $@ $(addsuffix .cmxa, $(LIBS)) $^
 
 # for metac:
-metac_sources := $(addprefix metac/, $(shell tail +2 metac/metac.cm))
+metac_sources := $(addprefix metac/, $(shell tail -n +2 metac/metac.cm))
 metac/metac.$(HEAP): $(metac_sources)
 
 # for paper:
